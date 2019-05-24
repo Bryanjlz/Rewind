@@ -1,9 +1,10 @@
 public class GameThread implements Runnable {
     private Level[] levels;
-    private int currentLevel;
+    private Level currentLevel;
     private Player player;
     public GameThread () {
         player = new Player();
+        currentLevel = new Level(player);
     }
     public void run() {
         while (true) {
@@ -19,5 +20,9 @@ public class GameThread implements Runnable {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public Level getCurrentLevel() {
+        return currentLevel;
     }
 }

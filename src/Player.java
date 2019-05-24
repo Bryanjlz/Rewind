@@ -137,4 +137,8 @@ public class Player implements Movable, Updatable {
             vel.setyVel(-yMaxVel);
         }
     }
+
+    public void checkCollision() {
+
+    }
 }

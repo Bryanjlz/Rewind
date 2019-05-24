@@ -1,3 +1,5 @@
+import jdk.internal.org.objectweb.asm.tree.MultiANewArrayInsnNode;
+
 public class Level {
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
@@ -6,10 +8,14 @@ public class Level {
     private Player player;
 
     public Level (Player player) {
+        terrain = new Terrain[25][25];
         stones = new MyArrayList<Stone>();
         movingWalls = new MyArrayList<MovingWall>();
         this.player = player;
         this.levelFinished = false;
+        for (int i = 0; i < terrain.length; i++) {
+            terrain[24][i] = new Wall(MainFrame.GRID_SCREEN_RATIO * i,MainFrame.HEIGHT - MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
+        }
     }
 
     public MyArrayList<MovingWall> getMovingWalls() {

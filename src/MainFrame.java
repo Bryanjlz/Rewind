@@ -12,6 +12,7 @@ public class MainFrame extends JFrame {
     private GamePanel panel;
     public static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     public static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
+    public static final int GRID_SCREEN_RATIO = HEIGHT / 25;
     public MainFrame () {
         // create jframe
         super("Not a Nice Game");
@@ -32,6 +33,8 @@ public class MainFrame extends JFrame {
         this.addMouseListener(mouseListener);
 
         this.requestFocusInWindow();
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setUndecorated(true);
         this.setVisible(true);
     }
 
@@ -75,6 +78,8 @@ public class MainFrame extends JFrame {
                     game.getPlayer().setHoldRight(false);
                     game.getPlayer().getAcc().setxAcc(game.getPlayer().getAcc().getxAcc() * -1);
                     break;
+                case KeyEvent.VK_ESCAPE:
+                    System.exit(0);
             }
 
         }
