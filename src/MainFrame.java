@@ -12,7 +12,7 @@ public class MainFrame extends JFrame {
     private GamePanel panel;
     public static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     public static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static final int GRID_SCREEN_RATIO = HEIGHT / 25;
+    public static final int GRID_SCREEN_RATIO = HEIGHT / 9;
     public MainFrame () {
         // create jframe
         super("Not a Nice Game");
@@ -72,11 +72,11 @@ public class MainFrame extends JFrame {
                     break;
                 case KeyEvent.VK_A:
                     game.getPlayer().setHoldLeft(false);
-                    game.getPlayer().getAcc().setxAcc(game.getPlayer().getAcc().getxAcc() * -1);
+                    game.getPlayer().getAcc().setX(game.getPlayer().getAcc().getX() * -1);
                     break;
                 case KeyEvent.VK_D:
                     game.getPlayer().setHoldRight(false);
-                    game.getPlayer().getAcc().setxAcc(game.getPlayer().getAcc().getxAcc() * -1);
+                    game.getPlayer().getAcc().setX(game.getPlayer().getAcc().getX() * -1);
                     break;
                 case KeyEvent.VK_ESCAPE:
                     System.exit(0);

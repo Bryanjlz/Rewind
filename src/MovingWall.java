@@ -1,19 +1,19 @@
 import java.awt.*;
 
 public class MovingWall extends Terrain implements Movable {
-    private Velocity vel;
+    private Vector vel;
     public MovingWall () {
         super();
-        vel = new Velocity();
+        vel = new Vector();
     }
 
     @Override
-    public Velocity getVel() {
+    public Vector getVel() {
         return vel;
     }
 
     @Override
-    public void setVel(Velocity vel) {
+    public void setVel(Vector vel) {
         this.vel = vel;
     }
 
@@ -28,7 +28,7 @@ public class MovingWall extends Terrain implements Movable {
     }
 
     @Override
-    public void collide() {
+    public void collide(Player player) {
         //TODO: collision
     }
 }

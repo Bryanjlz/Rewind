@@ -19,5 +19,5 @@ abstract class Terrain {
         this.hitBox = hitBox;
     }
 
-    abstract void collide();
+    abstract void collide(Player player);
 }
