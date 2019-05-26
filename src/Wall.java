@@ -15,8 +15,10 @@ public class Wall extends Terrain {
     super.setHitBox(hitBox);
   }
 
-  @Override
-  void collide() {
-    //TODO: Wall collision
+  public boolean collide(Rectangle pBox) {
+    if (pBox.intersects(getHitBox())) {
+      return false;
+    }
+    return true;
   }
 }

@@ -25,6 +25,7 @@ public class GamePanel extends JPanel {
                 }
             }
         }
+        g.drawString(Integer.toString(game.getFps()), 100, 100);
         this.repaint();
     }
 }
