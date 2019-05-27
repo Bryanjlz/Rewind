@@ -1,4 +1,4 @@
 public interface Movable {
-    void setVel(Vector vel);
     Vector getVel();
+    void setVel(Vector vel);
 }

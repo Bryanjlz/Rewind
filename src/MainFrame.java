@@ -10,16 +10,18 @@ import java.awt.event.MouseEvent;
 public class MainFrame extends JFrame {
     private GameThread game;
     private GamePanel panel;
+    private Player player;
     public static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     public static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static final int GRID_SCREEN_RATIO = HEIGHT / 9;
+    public static final int GRID_SCREEN_RATIO = (int)(HEIGHT / 9.0);
     public MainFrame () {
         // create jframe
         super("Not a Nice Game");
         this.setSize(WIDTH, HEIGHT);
         this.setResizable(false);
-
-        game = new GameThread();
+        player = new Player(MainFrame.GRID_SCREEN_RATIO * 6, MainFrame.GRID_SCREEN_RATIO * 5);
+        System.out.println(HEIGHT + " " + WIDTH);
+        game = new GameThread(player);
         Thread thread = new Thread(game);
         thread.start();
 
@@ -47,16 +49,22 @@ public class MainFrame extends JFrame {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_W:
-                    game.getPlayer().setHoldUp(true);
+                    player.setHoldUp(true);
                     break;
                 case KeyEvent.VK_S:
-                    game.getPlayer().setHoldDown(true);
+                    player.setHoldDown(true);
                     break;
                 case KeyEvent.VK_A:
-                    game.getPlayer().setHoldLeft(true);
+                    if (!player.isHoldRight()) {
+                        player.setHoldLeft(true);
+                        player.setDirection("left");
+                    }
                     break;
                 case KeyEvent.VK_D:
-                    game.getPlayer().setHoldRight(true);
+                    if (!player.isHoldLeft()) {
+                        player.setHoldRight(true);
+                        player.setDirection("right");
+                    }
                     break;
             }
         }
@@ -65,18 +73,21 @@ public class MainFrame extends JFrame {
         public void keyReleased(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_W:
-                    game.getPlayer().setHoldUp(false);
+                    player.setHoldUp(false);
                     break;
                 case KeyEvent.VK_S:
-                    game.getPlayer().setHoldDown(false);
+                    player.setHoldDown(false);
                     break;
                 case KeyEvent.VK_A:
-                    game.getPlayer().setHoldLeft(false);
-                    game.getPlayer().getAcc().setX(game.getPlayer().getAcc().getX() * -1);
+                    player.setHoldLeft(false);
+                    player.getAcc().setX(player.getAcc().getX() * -1);
                     break;
                 case KeyEvent.VK_D:
-                    game.getPlayer().setHoldRight(false);
-                    game.getPlayer().getAcc().setX(game.getPlayer().getAcc().getX() * -1);
+                    player.setHoldRight(false);
+                    player.getAcc().setX(player.getAcc().getX() * -1);
+                    break;
+                case KeyEvent.VK_SPACE:
+                    player.interact();
                     break;
                 case KeyEvent.VK_ESCAPE:
                     System.exit(0);

@@ -4,7 +4,7 @@ public class MovingWall extends Terrain implements Movable {
     private Vector vel;
     public MovingWall () {
         super();
-        vel = new Vector();
+        vel = new Vector(0 ,0);
     }
 
     @Override
@@ -18,17 +18,16 @@ public class MovingWall extends Terrain implements Movable {
     }
 
     @Override
-    public Rectangle getHitBox() {
-        return super.getHitBox();
+    public Rectangle getHitbox() {
+        return super.getHitbox();
     }
 
     @Override
-    public void setHitBox(Rectangle hitBox) {
-        super.setHitBox(hitBox);
+    public void setHitbox(Rectangle hitBox) {
+        super.setHitbox(hitBox);
     }
 
-    @Override
-    public void collide(Player player) {
+    public void collide() {
         //TODO: collision
     }
 }

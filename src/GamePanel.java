@@ -14,17 +14,22 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         //TODO: graphics
 
-        g.drawRect((int)player.getHitBox().getX(), (int)player.getHitBox().getY(), (int)player.getHitBox().getWidth(), (int)player.getHitBox().getHeight());
+        g.drawRect((int)player.getHitbox().getX(), (int)player.getHitbox().getY(), (int)player.getHitbox().getWidth(), (int)player.getHitbox().getHeight());
         Terrain[][] terrain = currentLevel.getTerrain();
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
                 if (terrain[i][j] != null) {
-                    Rectangle hitBox = terrain[i][j].getHitBox();
+                    Rectangle hitbox = terrain[i][j].getHitbox();
                     //System.out.println(hitBox.getX() + " " + hitBox.getY());
-                    g.drawRect((int) hitBox.getX(), (int) hitBox.getY(), (int) hitBox.getWidth(), (int) hitBox.getHeight());
+                    g.drawRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
                 }
             }
         }
+        for (int i = 0; i < currentLevel.getStones().size(); i++) {
+            Rectangle hitbox = currentLevel.getStones().get(i).getHitbox();
+            g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+        }
+        g.drawString(Integer.toString(game.getFps()), 100, 100);
         this.repaint();
     }
 }
