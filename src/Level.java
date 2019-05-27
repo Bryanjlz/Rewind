@@ -27,6 +27,9 @@ public class Level {
         for (int i = 0; i < terrain[0].length; i++) {
             terrain[i][0] = new Wall(0,i * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
         }
+        for (int i = 0; i < terrain[0].length; i++) {
+            terrain[i][15] = new Wall(15*MainFrame.GRID_SCREEN_RATIO,i * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
+        }
 
         terrain[4][1] = new Wall(MainFrame.GRID_SCREEN_RATIO * 1,4 * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
     }

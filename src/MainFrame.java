@@ -57,13 +57,45 @@ public class MainFrame extends JFrame {
                 case KeyEvent.VK_A:
                     if (!player.isHoldRight()) {
                         player.setHoldLeft(true);
-                        player.setDirection("left");
+                        if (player.isHoldingStone() && player.getDirection().equals("right")) {
+                            Rectangle stoneBox = new Rectangle(player.getHeldStone().getHitbox());
+                            int xMove = (int)-(stoneBox.getWidth() + player.getHitbox().getWidth());
+                            stoneBox.translate(xMove, 0);
+                            Terrain[][] terrain = game.getCurrentLevel().getTerrain();
+                            boolean wallClip = false;
+                            for (int i = 0; i < terrain.length && !wallClip; i++) {
+                                for (int j = 0; j < terrain[0].length && !wallClip; j++) {
+                                    if (terrain[i][j] != null && stoneBox.intersects(terrain[i][j].getHitbox())) {
+                                        wallClip = true;
+                                    }
+                                }
+                            }
+                            if (!wallClip) {
+                                player.setDirection("left");
+                            }
+                        } else {
+                            player.setDirection("left");
+                        }
                     }
                     break;
                 case KeyEvent.VK_D:
                     if (!player.isHoldLeft()) {
                         player.setHoldRight(true);
-                        player.setDirection("right");
+                        if (player.isHoldingStone() && player.getDirection().equals("left")) {
+                            Stone stone = player.getHeldStone();
+                            Terrain[][] terrain = game.getCurrentLevel().getTerrain();
+                            boolean wallClip = false;
+                            for (int i = 0; i < terrain.length && !wallClip; i++) {
+                                for (int j = 0; j < terrain[0].length && !wallClip; j++) {
+                                    if (!stone.getHitbox().intersects(terrain[i][j].getHitbox())) {
+                                        player.setDirection("right");
+                                        wallClip = true;
+                                    }
+                                }
+                            }
+                        } else {
+                            player.setDirection("right");
+                        }
                     }
                     break;
             }

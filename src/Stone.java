@@ -64,26 +64,27 @@ public class Stone extends Terrain implements Movable, Updatable {
     @Override
     public void update () {
         if (isPickedUp()) {
-            getVel().setX(player.getVel().getX());
-            getVel().setY(player.getVel().getY());
-            getAcc().setX(player.getAcc().getX());
-            getAcc().setY(player.getAcc().getY());
             Rectangle pBox = player.getHitbox();
             if (player.getDirection().equals("right")) {
                 getHitbox().setLocation((int)(pBox.getX() + pBox.getWidth()), (int)(pBox.getY()));
             } else {
                 getHitbox().setLocation((int)(pBox.getX() - getHitbox().getWidth()), (int)(pBox.getY()));
             }
+            getVel().setX(player.getVel().getX());
+            getVel().setY(player.getVel().getY());
+            getAcc().setX(player.getAcc().getX());
+            getAcc().setY(player.getAcc().getY());
+            onGround = player.isOnGround();
         } else {
-            if (((vel.getX()) < 0 && (acc.getX() < 0)) || ((vel.getX()) > 0 && (acc.getX() > 0))) {
-                vel.setX(0);
-                acc.setX(0);
-            } else if (onGround && vel.getX() != 0) {
+            if (onGround && vel.getX() != 0 && !(Math.abs(vel.getX()) <= 1.5)) {
                 if (vel.getX() > 0) {
                     acc.setX(-1.5);
                 } else {
                     acc.setX(1.5);
                 }
+            } else if (onGround){
+                acc.setX(0);
+                vel.setX(0);
             }
 
             if (vel.getY() > yMaxVel) {

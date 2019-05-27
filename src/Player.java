@@ -135,6 +135,14 @@ public class Player implements Movable, Updatable {
         this.stones = stones;
     }
 
+    public Stone getHeldStone() {
+        return heldStone;
+    }
+
+    public boolean isOnGround() {
+        return onGround;
+    }
+
     @Override
     public void update() {
         if (isHoldUp()) {
@@ -195,8 +203,34 @@ public class Player implements Movable, Updatable {
                 }
             } else {
                 heldStone.setPickedUp(false);
-                heldStone = null;
                 isHoldingStone = false;
+                heldStone.getVel().setX(vel.getX());
+                heldStone.getVel().setY(vel.getY());
+                heldStone.getAcc().setX(acc.getX());
+                heldStone.getAcc().setY(acc.getY());
+                heldStone = null;
+            }
+        } else {
+            if (!isHoldingStone()) {
+                boolean foundStone = false;
+                Point p = new Point((int)(getHitbox().getX() + getHitbox().getWidth() + MainFrame.GRID_SCREEN_RATIO * 0.2), (int)getHitbox().getY());
+                for (int i = 0; i < stones.size() && !foundStone; i++) {
+                    if (stones.get(i).getHitbox().contains(p)) {
+                        foundStone = true;
+                        isHoldingStone = true;
+                        stones.get(i).setPickedUp(true);
+                        heldStone = stones.get(i);
+                        stones.get(i).setPlayer(this);
+                    }
+                }
+            } else {
+                heldStone.setPickedUp(false);
+                isHoldingStone = false;
+                heldStone.getVel().setX(vel.getX());
+                heldStone.getVel().setY(vel.getY());
+                heldStone.getAcc().setX(acc.getX());
+                heldStone.getAcc().setY(acc.getY());
+                heldStone = null;
             }
         }
     }
@@ -208,39 +242,21 @@ public class Player implements Movable, Updatable {
     }
 
     private void tryMove (int xMove, int yMove) {
-        int yPos = 0;
-        int xPos = 0;
         getHitbox().translate(xMove, 0);
         if (isHoldingStone()) {
             heldStone.getHitbox().translate(xMove, 0);
         }
-        if (!checkWallCollisions()) {
-            if (getVel().getX() > 0) {
-                xPos = (int)(getHitbox().getX() / MainFrame.GRID_SCREEN_RATIO) * MainFrame.GRID_SCREEN_RATIO;
-            } else {
-                xPos = (int)((getHitbox().getX() / MainFrame.GRID_SCREEN_RATIO) + 1) * MainFrame.GRID_SCREEN_RATIO;
-            }
-            getVel().setX(0);
-            getHitbox().setLocation(xPos, (int)getHitbox().getY());
-        }
+        checkWallCollisions(true);
         getHitbox().translate(0, yMove);
-        if (!checkWallCollisions()) {
-            if (getVel().getY() > 0) {
-                yPos = (int)(getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) * MainFrame.GRID_SCREEN_RATIO;
-                getVel().setY(0);
-                onGround = true;
-            } else {
-                yPos = (int)((getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) + 1) * MainFrame.GRID_SCREEN_RATIO;
-                onGround = false;
-                getVel().setY(-getVel().getY() * 0.2);
-            }
-            getHitbox().setLocation((int)getHitbox().getX(), yPos);
-        } else {
+        if (isHoldingStone()) {
+            heldStone.getHitbox().translate(0, yMove);
+        }
+        if (checkWallCollisions(false)) {
             onGround = false;
         }
     }
 
-    private boolean checkWallCollisions () {
+    private boolean checkWallCollisions (boolean tryX) {
         boolean okMove = true;
         for (int i = 0; i < terrain.length && okMove; i++) {
             for (int j = 0; j < terrain[0].length && okMove; j++) {
@@ -250,17 +266,68 @@ public class Player implements Movable, Updatable {
                     } else {
                         okMove = ((Wall)(terrain[i][j])).collide(getHitbox());
                     }
+                    if (!okMove) {
+                        wallCollide(terrain[i][j].getHitbox(), tryX);
+                    }
                 }
             }
         }
         for (int i = 0; i < stones.size() && okMove; i++) {
             if (stones.get(i) != heldStone) {
                 okMove = stones.get(i).collide(getHitbox());
-                /*if(isHoldingStone()) {
+                if(isHoldingStone()) {
                     okMove = stones.get(i).collide(heldStone.getHitbox());
-                }*/
+                }
+                if (!okMove) {
+                    wallCollide(stones.get(i).getHitbox(),tryX);
+                }
             }
         }
         return okMove;
+    }
+
+    private void wallCollide (Rectangle wBox, boolean tryX) {
+        if (tryX) {
+            int xPos = 0;
+            if (getDirection().equals("right")) {
+                if (wBox.getX() > getHitbox().getX()) {
+                    xPos = (int) (wBox.getX() - getHitbox().getWidth());
+                    if (isHoldingStone()) {
+                        xPos -= heldStone.getHitbox().getWidth();
+                    }
+                } else {
+                    xPos = (int) (wBox.getX() + wBox.getWidth());
+                }
+            } else {
+                if (wBox.getX() < getHitbox().getX()) {
+                    xPos = (int) (wBox.getX() + getHitbox().getWidth());
+                    if (isHoldingStone()) {
+                        xPos += heldStone.getHitbox().getWidth();
+                    }
+                } else {
+                    xPos = (int) (wBox.getX() - wBox.getWidth());
+                }
+            }
+            if (isHoldingStone()) {
+                heldStone.getHitbox().translate((int) (xPos - getHitbox().getX()), 0);
+            }
+            getVel().setX(0);
+            getHitbox().setLocation(xPos, (int) getHitbox().getY());
+        } else {
+            int yPos = 0;
+            if (getVel().getY() > 0) {
+                yPos = (int) (getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) * MainFrame.GRID_SCREEN_RATIO;
+                getVel().setY(0);
+                onGround = true;
+            } else {
+                yPos = (int) ((getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) + 1) * MainFrame.GRID_SCREEN_RATIO;
+                onGround = false;
+                getVel().setY(-getVel().getY() * 0.2);
+            }
+            if (isHoldingStone()) {
+                heldStone.getHitbox().translate(0, (int) (yPos - getHitbox().getY()));
+            }
+            getHitbox().setLocation((int) getHitbox().getX(), yPos);
+        }
     }
 }
