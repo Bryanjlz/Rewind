@@ -9,7 +9,8 @@ public class Stone extends Terrain implements Movable, Updatable {
     private boolean pickedUp;
     private Player player;
     private Terrain[][] terrain;
-    public Stone (int x, int y, Terrain[][] terrain) {
+    private MyArrayList<Stone> stones;
+    public Stone (int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones) {
         super(x, y);
         vel = new Vector(0, 0);
         acc = new Vector(0, 0);
@@ -17,6 +18,7 @@ public class Stone extends Terrain implements Movable, Updatable {
         pickedUp = false;
         player = null;
         this.terrain = terrain;
+        this.stones = stones;
     }
 
     @Override
@@ -138,6 +140,11 @@ public class Stone extends Terrain implements Movable, Updatable {
                 if (terrain[i][j] instanceof Wall) {
                     okMove = ((Wall)(terrain[i][j])).collide(getHitbox());
                 }
+            }
+        }
+        for (int i = 0; i < stones.size() && okMove; i++) {
+            if (stones.get(i) != this) {
+                okMove = stones.get(i).collide(getHitbox());
             }
         }
         return okMove;

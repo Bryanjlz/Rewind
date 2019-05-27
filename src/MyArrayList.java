@@ -4,6 +4,9 @@ public class MyArrayList<T> {
   public MyArrayList () {
     head = null;
   }
+  public MyArrayList (MyArrayList<T> ori) {
+
+  }
 
   public void add(T item) {
     Node<T> temp = head;

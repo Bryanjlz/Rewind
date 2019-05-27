@@ -13,7 +13,7 @@ public class MainFrame extends JFrame {
     private Player player;
     public static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     public static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static final int GRID_SCREEN_RATIO = (int)(HEIGHT / 9.0);
+    public static final int GRID_SCREEN_RATIO = (int)(HEIGHT / 18.0);
     public MainFrame () {
         // create jframe
         super("Not a Nice Game");
@@ -70,6 +70,12 @@ public class MainFrame extends JFrame {
                                     }
                                 }
                             }
+                            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+                            for (int i = 0; i < stones.size() && !wallClip; i++) {
+                                if (stones.get(i) != player.getHeldStone() && stoneBox.intersects(stones.get(i).getHitbox())) {
+                                    wallClip = true;
+                                }
+                            }
                             if (!wallClip) {
                                 player.setDirection("left");
                             }
@@ -82,16 +88,30 @@ public class MainFrame extends JFrame {
                     if (!player.isHoldLeft()) {
                         player.setHoldRight(true);
                         if (player.isHoldingStone() && player.getDirection().equals("left")) {
-                            Stone stone = player.getHeldStone();
+                            Rectangle stoneBox = player.getHeldStone().getHitbox();
+                            int xMove = (int)(player.getHitbox().getWidth() + stoneBox.getWidth());
+                            stoneBox.translate(xMove, 0);
                             Terrain[][] terrain = game.getCurrentLevel().getTerrain();
                             boolean wallClip = false;
                             for (int i = 0; i < terrain.length && !wallClip; i++) {
                                 for (int j = 0; j < terrain[0].length && !wallClip; j++) {
-                                    if (!stone.getHitbox().intersects(terrain[i][j].getHitbox())) {
+                                    if (terrain[i][j] != null && stoneBox.intersects(terrain[i][j].getHitbox())) {
                                         player.setDirection("right");
                                         wallClip = true;
                                     }
                                 }
+                            }
+                            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+                            for (int i = 0; i < stones.size() && !wallClip; i++) {
+                                if (stones.get(i).getHitbox() != stoneBox && stoneBox.intersects(stones.get(i).getHitbox())) {
+                                    player.setDirection("right");
+                                    wallClip = true;
+                                }
+                            }
+                            if (!wallClip) {
+                                player.setDirection("right");
+                            } else {
+                                player.setDirection("left");
                             }
                         } else {
                             player.setDirection("right");

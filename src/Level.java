@@ -1,37 +1,39 @@
+import java.awt.*;
+import java.util.Arrays;
+
 public class Level {
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
     private MyArrayList<MovingWall> movingWalls;
     private boolean levelFinished;
     private Player player;
+    private Point playerLoc;
 
-    public Level (Player player) {
-        terrain = new Terrain[25][25];
+    public Level () {
+        terrain = new Terrain[18][32];
         stones = new MyArrayList<Stone>();
-        stones.add(new Stone(MainFrame.GRID_SCREEN_RATIO * 4, MainFrame.GRID_SCREEN_RATIO*2, terrain));
         movingWalls = new MyArrayList<MovingWall>();
+        this.levelFinished = false;
+    }
+
+    public Level (Level level) {
+        copyTerrain(level.getTerrain(), terrain);
+
+    }
+
+    private void copyTerrain (Terrain[][] ori, Terrain[][] dest) {
+        for (int i = 0; i < ori.length; i++) {
+            for (int j = 0; j < ori[0].length; j++) {
+                ori[i][j] = dest[i][j];
+            }
+        }
+    }
+
+    public void startLevel (Player player) {
         this.player = player;
         player.setTerrain(terrain);
         player.setStones(stones);
-        player.holdStone();
-        this.levelFinished = false;
-        for (int i = 0; i < terrain[0].length; i++) {
-            terrain[i][0] = new Wall(0,MainFrame.GRID_SCREEN_RATIO * i, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
-        }
-        for (int i = 0; i < terrain.length; i++) {
-            terrain[8][i] = new Wall(MainFrame.GRID_SCREEN_RATIO * i,8 * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
-        }
-        for (int i = 0; i < terrain.length; i++) {
-            terrain[7][i] = new Wall(MainFrame.GRID_SCREEN_RATIO * i,7 * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
-        }
-        for (int i = 0; i < terrain[0].length; i++) {
-            terrain[i][0] = new Wall(0,i * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
-        }
-        for (int i = 0; i < terrain[0].length; i++) {
-            terrain[i][15] = new Wall(15*MainFrame.GRID_SCREEN_RATIO,i * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
-        }
-
-        terrain[4][1] = new Wall(MainFrame.GRID_SCREEN_RATIO * 1,4 * MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
+        player.getHitbox().setLocation(playerLoc);
     }
 
     public MyArrayList<MovingWall> getMovingWalls() {
@@ -44,6 +46,10 @@ public class Level {
 
     public Terrain[][] getTerrain() {
         return terrain;
+    }
+
+    public void setPlayerLoc(Point playerLoc) {
+        this.playerLoc = playerLoc;
     }
 
     public void setLevelFinished(boolean levelFinished) {

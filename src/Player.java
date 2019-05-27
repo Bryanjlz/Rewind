@@ -34,13 +34,6 @@ public class Player implements Movable, Updatable {
         direction = "left";
     }
 
-    public void holdStone () {
-        isHoldingStone = true;
-        stones.get(0).setPickedUp(true);
-        heldStone = stones.get(0);
-        stones.get(0).setPlayer(this);
-    }
-
     public void setHitbox(Rectangle hitbox) {
         this.hitbox = hitbox;
     }
@@ -254,6 +247,17 @@ public class Player implements Movable, Updatable {
         if (checkWallCollisions(false)) {
             onGround = false;
         }
+        checkTerrainCollisions();
+    }
+
+    private void checkTerrainCollisions() {
+        for (int i = 0; i < terrain.length; i++) {
+            for (int j = 0; j < terrain[0].length; j++) {
+                if (terrain[i][j] instanceof Exit) {
+                    ((Exit)terrain[i][j]).collide(getHitbox());
+                }
+            }
+        }
     }
 
     private boolean checkWallCollisions (boolean tryX) {
@@ -274,9 +278,10 @@ public class Player implements Movable, Updatable {
         }
         for (int i = 0; i < stones.size() && okMove; i++) {
             if (stones.get(i) != heldStone) {
-                okMove = stones.get(i).collide(getHitbox());
                 if(isHoldingStone()) {
-                    okMove = stones.get(i).collide(heldStone.getHitbox());
+                    okMove = stones.get(i).collide(heldStone.getHitbox()) && stones.get(i).collide(getHitbox());
+                } else {
+                    okMove = stones.get(i).collide(getHitbox());
                 }
                 if (!okMove) {
                     wallCollide(stones.get(i).getHitbox(),tryX);

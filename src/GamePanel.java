@@ -18,13 +18,20 @@ public class GamePanel extends JPanel {
         Terrain[][] terrain = currentLevel.getTerrain();
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
-                if (terrain[i][j] != null) {
+                if (terrain[i][j] instanceof Wall) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
                     //System.out.println(hitBox.getX() + " " + hitBox.getY());
                     g.drawRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+                } else if (terrain[i][j] instanceof Exit) {
+                    Rectangle hitbox = terrain[i][j].getHitbox();
+                    //System.out.println(hitBox.getX() + " " + hitBox.getY());
+                    g.setColor(Color.BLUE);
+                    g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+                    g.setColor(Color.BLACK);
                 }
             }
         }
+        g.setColor(Color.BLACK);
         for (int i = 0; i < currentLevel.getStones().size(); i++) {
             Rectangle hitbox = currentLevel.getStones().get(i).getHitbox();
             g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
