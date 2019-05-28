@@ -8,7 +8,7 @@ abstract class Terrain {
     }
 
     Terrain (int x, int y) {
-        this.hitbox = new Rectangle(x, y, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
+        this.hitbox = new Rectangle(x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
     }
 
     Terrain (int x, int y, int width, int height) {

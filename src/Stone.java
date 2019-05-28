@@ -2,23 +2,23 @@ import java.awt.*;
 
 public class Stone extends Terrain implements Movable, Updatable {
     private Vector vel;
-    private static double yMaxVel = MainFrame.GRID_SCREEN_RATIO * 0.4;
-    private static double gravityAcc = MainFrame.GRID_SCREEN_RATIO * 0.03;
+    private static double yMaxVel = MainFrame.gridScreenRatio * 0.4;
+    private static double gravityAcc = MainFrame.gridScreenRatio * 0.03;
     private Vector acc;
     private boolean onGround;
     private boolean pickedUp;
     private Player player;
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
-    public Stone (int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones) {
+    public Stone (int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones, Player player) {
         super(x, y);
         vel = new Vector(0, 0);
         acc = new Vector(0, 0);
         onGround = false;
         pickedUp = false;
-        player = null;
         this.terrain = terrain;
         this.stones = stones;
+        this.player = player;
     }
 
     @Override
@@ -109,9 +109,9 @@ public class Stone extends Terrain implements Movable, Updatable {
         getHitbox().translate(xMove, 0);
         if (!checkWallCollisions()) {
             if (vel.getX() > 0) {
-                xPos = (int)(getHitbox().getX() / MainFrame.GRID_SCREEN_RATIO) * MainFrame.GRID_SCREEN_RATIO;
+                xPos = (int)(getHitbox().getX() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
             } else {
-                xPos = (int)((getHitbox().getX() / MainFrame.GRID_SCREEN_RATIO) + 1) * MainFrame.GRID_SCREEN_RATIO;
+                xPos = (int)((getHitbox().getX() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
             }
             vel.setX(0);
             getHitbox().setLocation(xPos, (int)getHitbox().getY());
@@ -119,11 +119,11 @@ public class Stone extends Terrain implements Movable, Updatable {
         getHitbox().translate(0, yMove);
         if (!checkWallCollisions()) {
             if (vel.getY() > 0) {
-                yPos = (int)(getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) * MainFrame.GRID_SCREEN_RATIO;
+                yPos = (int)(getHitbox().getY() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
                 getVel().setY(0);
                 onGround = true;
             } else {
-                yPos = (int)((getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) + 1) * MainFrame.GRID_SCREEN_RATIO;
+                yPos = (int)((getHitbox().getY() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
                 onGround = false;
                 vel.setY(-vel.getY() * 0.2);
             }
@@ -146,6 +146,9 @@ public class Stone extends Terrain implements Movable, Updatable {
             if (stones.get(i) != this) {
                 okMove = stones.get(i).collide(getHitbox());
             }
+        }
+        if (!isPickedUp() && getHitbox().intersects(player.getHitbox())) {
+            okMove = false;
         }
         return okMove;
     }

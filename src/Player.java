@@ -17,13 +17,26 @@ public class Player implements Movable, Updatable {
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
     private boolean onGround;
+    private boolean isDead;
     private String direction;
 
-    public Player (int x, int y) {
-        hitbox = new Rectangle (x, y, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
-        xMaxVel = MainFrame.GRID_SCREEN_RATIO * 0.2;
-        yMaxVel = MainFrame.GRID_SCREEN_RATIO * 0.4;
-        gravityAcc = MainFrame.GRID_SCREEN_RATIO * 0.03;
+    Player (int x, int y) {
+        hitbox = new Rectangle (x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
+        xMaxVel = MainFrame.gridScreenRatio * 0.2;
+        yMaxVel = MainFrame.gridScreenRatio * 0.4;
+        gravityAcc = MainFrame.gridScreenRatio * 0.03;
+        vel = new Vector(0, 0);
+        acc = new Vector(0, gravityAcc);
+        isHoldingKey = false;
+        isHoldingStone = false;
+        heldStone = null;
+        timePower = 0;
+        onGround = false;
+        direction = "left";
+    }
+
+    Player() {
+        hitbox = new Rectangle (0, 0, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
         vel = new Vector(0, 0);
         acc = new Vector(0, gravityAcc);
         isHoldingKey = false;
@@ -136,6 +149,20 @@ public class Player implements Movable, Updatable {
         return onGround;
     }
 
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
+    }
+
+    void startLevel() {
+        xMaxVel = MainFrame.gridScreenRatio * 0.2;
+        yMaxVel = MainFrame.gridScreenRatio * 0.4;
+        gravityAcc = MainFrame.gridScreenRatio * 0.03;
+    }
+
     @Override
     public void update() {
         if (isHoldUp()) {
@@ -178,54 +205,48 @@ public class Player implements Movable, Updatable {
         vel.setX(vel.getX() + acc.getX());
         vel.setY(vel.getY() + acc.getY());
         tryMove((int)vel.getX(), (int)vel.getY());
+        checkInScreen();
     }
     
-    public void interact() {
+    void interact() {
         if (direction.equals("left")) {
             if (!isHoldingStone()) {
-                boolean foundStone = false;
-                Point p = new Point((int)(getHitbox().getX() - MainFrame.GRID_SCREEN_RATIO * 0.2), (int)getHitbox().getY());
-                for (int i = 0; i < stones.size() && !foundStone; i++) {
-                    if (stones.get(i).getHitbox().contains(p)) {
-                        foundStone = true;
-                        isHoldingStone = true;
-                        stones.get(i).setPickedUp(true);
-                        heldStone = stones.get(i);
-                        stones.get(i).setPlayer(this);
-                    }
-                }
+                Point p = new Point((int)(getHitbox().getX() - MainFrame.gridScreenRatio * 0.2), (int)getHitbox().getY());
+                pickUpStone(p);
             } else {
-                heldStone.setPickedUp(false);
-                isHoldingStone = false;
-                heldStone.getVel().setX(vel.getX());
-                heldStone.getVel().setY(vel.getY());
-                heldStone.getAcc().setX(acc.getX());
-                heldStone.getAcc().setY(acc.getY());
-                heldStone = null;
+                placeDownStone();
             }
         } else {
             if (!isHoldingStone()) {
-                boolean foundStone = false;
-                Point p = new Point((int)(getHitbox().getX() + getHitbox().getWidth() + MainFrame.GRID_SCREEN_RATIO * 0.2), (int)getHitbox().getY());
-                for (int i = 0; i < stones.size() && !foundStone; i++) {
-                    if (stones.get(i).getHitbox().contains(p)) {
-                        foundStone = true;
-                        isHoldingStone = true;
-                        stones.get(i).setPickedUp(true);
-                        heldStone = stones.get(i);
-                        stones.get(i).setPlayer(this);
-                    }
-                }
+                Point p = new Point((int)(getHitbox().getX() + getHitbox().getWidth() + MainFrame.gridScreenRatio * 0.2), (int)getHitbox().getY());
+                pickUpStone(p);
             } else {
-                heldStone.setPickedUp(false);
-                isHoldingStone = false;
-                heldStone.getVel().setX(vel.getX());
-                heldStone.getVel().setY(vel.getY());
-                heldStone.getAcc().setX(acc.getX());
-                heldStone.getAcc().setY(acc.getY());
-                heldStone = null;
+                placeDownStone();
             }
         }
+    }
+
+    private void pickUpStone (Point p) {
+        boolean foundStone = false;
+        for (int i = 0; i < stones.size() && !foundStone; i++) {
+            if (stones.get(i).getHitbox().contains(p)) {
+                foundStone = true;
+                isHoldingStone = true;
+                stones.get(i).setPickedUp(true);
+                heldStone = stones.get(i);
+                stones.get(i).setPlayer(this);
+            }
+        }
+    }
+
+    private void placeDownStone () {
+        heldStone.setPickedUp(false);
+        isHoldingStone = false;
+        heldStone.getVel().setX(vel.getX());
+        heldStone.getVel().setY(vel.getY());
+        heldStone.getAcc().setX(acc.getX());
+        heldStone.getAcc().setY(acc.getY());
+        heldStone = null;
     }
     
     private void jump() {
@@ -321,11 +342,11 @@ public class Player implements Movable, Updatable {
         } else {
             int yPos = 0;
             if (getVel().getY() > 0) {
-                yPos = (int) (getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) * MainFrame.GRID_SCREEN_RATIO;
+                yPos = (int) (getHitbox().getY() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
                 getVel().setY(0);
                 onGround = true;
             } else {
-                yPos = (int) ((getHitbox().getY() / MainFrame.GRID_SCREEN_RATIO) + 1) * MainFrame.GRID_SCREEN_RATIO;
+                yPos = (int) ((getHitbox().getY() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
                 onGround = false;
                 getVel().setY(-getVel().getY() * 0.2);
             }
@@ -333,6 +354,14 @@ public class Player implements Movable, Updatable {
                 heldStone.getHitbox().translate(0, (int) (yPos - getHitbox().getY()));
             }
             getHitbox().setLocation((int) getHitbox().getX(), yPos);
+        }
+    }
+
+    private void checkInScreen () {
+        int xPos = (int)getHitbox().getX();
+        int yPos = (int)getHitbox().getY();
+        if (xPos > MainFrame.WIDTH || xPos < -getHitbox().getWidth() || yPos > MainFrame.HEIGHT || yPos < -getHitbox().getHeight()) {
+            setDead(true);
         }
     }
 }

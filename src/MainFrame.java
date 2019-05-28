@@ -6,6 +6,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 
 public class MainFrame extends JFrame {
     private GameThread game;
@@ -13,14 +14,14 @@ public class MainFrame extends JFrame {
     private Player player;
     public static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     public static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static final int GRID_SCREEN_RATIO = (int)(HEIGHT / 18.0);
+    public static int gridScreenRatio;
     public MainFrame () {
         // create jframe
         super("Not a Nice Game");
         this.setSize(WIDTH, HEIGHT);
         this.setResizable(false);
-        player = new Player(MainFrame.GRID_SCREEN_RATIO * 6, MainFrame.GRID_SCREEN_RATIO * 5);
-        System.out.println(HEIGHT + " " + WIDTH);
+        player = new Player();
+        System.out.println(player.getHitbox().getX() + " " + WIDTH);
         game = new GameThread(player);
         Thread thread = new Thread(game);
         thread.start();

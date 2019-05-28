@@ -3,7 +3,7 @@ import java.awt.*;
 public class Exit extends Terrain {
   private Level currentLevel;
   public Exit (int x, int y) {
-    super (x, y, MainFrame.GRID_SCREEN_RATIO, MainFrame.GRID_SCREEN_RATIO);
+    super (x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
   }
   public void collide(Rectangle pBox) {
     if (pBox.intersects(getHitbox())) {

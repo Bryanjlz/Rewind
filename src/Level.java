@@ -1,5 +1,7 @@
 import java.awt.*;
-import java.util.Arrays;
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
 
 public class Level {
     private Terrain[][] terrain;
@@ -9,24 +11,12 @@ public class Level {
     private Player player;
     private Point playerLoc;
 
-    public Level () {
+    public Level (Player player) {
         terrain = new Terrain[18][32];
         stones = new MyArrayList<Stone>();
         movingWalls = new MyArrayList<MovingWall>();
         this.levelFinished = false;
-    }
-
-    public Level (Level level) {
-        copyTerrain(level.getTerrain(), terrain);
-
-    }
-
-    private void copyTerrain (Terrain[][] ori, Terrain[][] dest) {
-        for (int i = 0; i < ori.length; i++) {
-            for (int j = 0; j < ori[0].length; j++) {
-                ori[i][j] = dest[i][j];
-            }
-        }
+        this.player = player;
     }
 
     public void startLevel (Player player) {
@@ -34,6 +24,41 @@ public class Level {
         player.setTerrain(terrain);
         player.setStones(stones);
         player.getHitbox().setLocation(playerLoc);
+        player.setDead(false);
+        player.startLevel();
+    }
+
+    public void loadFile (String path) {
+        try {
+            File file = new File(path);
+            Scanner fileReader = new Scanner(file);
+            int terrainWidth = fileReader.nextInt();
+            int terrainHeight = fileReader.nextInt();
+            terrain = new Terrain[terrainHeight][terrainWidth];
+            stones = new MyArrayList<>();
+            MainFrame.gridScreenRatio = MainFrame.HEIGHT / terrainHeight;
+            player.getHitbox().setSize(MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
+            for (int i = 0; i < terrainHeight; i++) {
+                for (int j = 0; j < terrainWidth; j++) {
+                    String terrainString = fileReader.next();
+                    if (terrainString.equals("w")) {
+                        terrain[i][j] = new Wall(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio);
+                    } else if (terrainString.equals("e")) {
+                        Exit exit = new Exit(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio);
+                        exit.setCurrentLevel(this);
+                        terrain[i][j] = exit;
+                    } else if (terrainString.equals("s")) {
+                        stones.add(new Stone (j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, terrain, stones, player));
+                    } else if (terrainString.equals("p")) {
+                        playerLoc = new Point(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio);
+                    }
+                }
+            }
+            fileReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public MyArrayList<MovingWall> getMovingWalls() {
