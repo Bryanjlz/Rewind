@@ -1,5 +1,5 @@
 import java.awt.*;
-public class Player implements Movable, Updatable {
+public class Player implements Movable, Updatable, Reversable<Player> {
     private Rectangle hitbox;
     private double gravityAcc;
     private double xMaxVel;
@@ -14,11 +14,14 @@ public class Player implements Movable, Updatable {
     private boolean holdDown;
     private boolean holdLeft;
     private boolean holdRight;
+    private String direction;
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
     private boolean onGround;
     private boolean isDead;
-    private String direction;
+    private boolean isReverse;
+    private boolean isReversing;
+    private MyQueue<Player> objectQueue;
 
     Player (int x, int y) {
         hitbox = new Rectangle (x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
@@ -33,6 +36,7 @@ public class Player implements Movable, Updatable {
         timePower = 0;
         onGround = false;
         direction = "left";
+        objectQueue = new MyQueue<Player>();
     }
 
     Player() {
@@ -45,6 +49,25 @@ public class Player implements Movable, Updatable {
         timePower = 0;
         onGround = false;
         direction = "left";
+        objectQueue = new MyQueue<Player>();
+    }
+
+    Player(Player player) {
+        hitbox = new Rectangle (player.getHitbox());
+        xMaxVel = player.getxMaxVel();
+        yMaxVel = player.getyMaxVel();
+        gravityAcc = player.getGravityAcc();
+        vel = new Vector(player.getVel());
+        acc = new Vector(player.getAcc());
+        isHoldingKey = false;
+        isHoldingStone = false;
+        heldStone = null;
+        timePower = player.getTimePower();
+        onGround = false;
+        direction = player.getDirection();
+        terrain = player.getTerrain();
+        stones = player.getStones();
+        objectQueue = new MyQueue<Player>(player.getObjectQueue());
     }
 
     public void setHitbox(Rectangle hitbox) {
@@ -157,6 +180,51 @@ public class Player implements Movable, Updatable {
         isDead = dead;
     }
 
+    public boolean isReverse() {
+        return isReverse;
+    }
+
+    public void setReverse(boolean reverse) {
+        isReverse = reverse;
+    }
+
+    public boolean isReversing() {
+        return isReversing;
+    }
+
+    public void setReversing(boolean reversing) {
+        isReversing = reversing;
+    }
+
+    @Override
+    public MyQueue<Player> getObjectQueue() {
+        return objectQueue;
+    }
+
+    public void setObjectQueue(MyQueue<Player> objectQueue) {
+        this.objectQueue = objectQueue;
+    }
+
+    public Terrain[][] getTerrain() {
+        return terrain;
+    }
+
+    public MyArrayList<Stone> getStones() {
+        return stones;
+    }
+
+    public double getxMaxVel() {
+        return xMaxVel;
+    }
+
+    public double getGravityAcc() {
+        return gravityAcc;
+    }
+
+    public double getyMaxVel() {
+        return yMaxVel;
+    }
+
     void startLevel() {
         xMaxVel = MainFrame.gridScreenRatio * 0.2;
         yMaxVel = MainFrame.gridScreenRatio * 0.4;
@@ -165,47 +233,50 @@ public class Player implements Movable, Updatable {
 
     @Override
     public void update() {
-        if (isHoldUp()) {
-            jump();
-        }
-        if (isHoldLeft()) {
-            if (vel.getX() < xMaxVel) {
-                if (onGround && (acc.getX() < vel.getX())) {
-                    acc.setX(-1.5);
+        if (!isReverse() || !isReversing()) {
+            if (isHoldUp()) {
+                jump();
+            }
+            if (isHoldLeft()) {
+                if (vel.getX() < xMaxVel) {
+                    if (onGround && (acc.getX() < vel.getX())) {
+                        acc.setX(-1.5);
+                    } else {
+                        acc.setX(-0.5);
+                    }
+                }
+            } else if (isHoldRight()) {
+                if (vel.getX() < xMaxVel) {
+                    if (onGround && (acc.getX() > vel.getX())) {
+                        acc.setX(1.5);
+                    } else {
+                        acc.setX(0.5);
+                    }
+                }
+            } else if (((vel.getX()) < 0 && (acc.getX() < 0)) || ((vel.getX()) > 0 && (acc.getX() > 0))) {
+                vel.setX(0);
+                acc.setX(0);
+            } else if (onGround && getVel().getX() != 0) {
+                if (getVel().getX() > 0) {
+                    getAcc().setX(-1.5);
                 } else {
-                    acc.setX(-0.5);
+                    getAcc().setX(1.5);
                 }
             }
-        } else if (isHoldRight()) {
-            if (vel.getX() < xMaxVel) {
-                if (onGround && (acc.getX() > vel.getX())) {
-                    acc.setX(1.5);
-                } else {
-                    acc.setX(0.5);
-                }
-            }
-        } else if (((vel.getX()) < 0 && (acc.getX() < 0)) || ((vel.getX()) > 0 && (acc.getX() > 0))) {
-            vel.setX(0);
-            acc.setX(0);
-        } else if (onGround && getVel().getX() != 0) {
-            if (getVel().getX() > 0) {
-                getAcc().setX(-1.5);
-            } else {
-                getAcc().setX(1.5);
-            }
-        }
 
-        if (vel.getY() > yMaxVel) {
-            acc.setY(0);
-        } else {
-            acc.setY(gravityAcc);
+            if (vel.getY() > yMaxVel) {
+                acc.setY(0);
+            } else {
+                acc.setY(gravityAcc);
+            }
+            //System.out.println(hitbox.x + " " + hitbox.y);
+            //System.out.println(vel.getMagnitude());
+            vel.setX(vel.getX() + acc.getX());
+            vel.setY(vel.getY() + acc.getY());
+            tryMove((int) vel.getX(), (int) vel.getY());
+            checkInScreen();
+            getObjectQueue().add(new Player(this));
         }
-        //System.out.println(hitbox.x + " " + hitbox.y);
-        //System.out.println(vel.getMagnitude());
-        vel.setX(vel.getX() + acc.getX());
-        vel.setY(vel.getY() + acc.getY());
-        tryMove((int)vel.getX(), (int)vel.getY());
-        checkInScreen();
     }
     
     void interact() {
@@ -363,5 +434,10 @@ public class Player implements Movable, Updatable {
         if (xPos > MainFrame.WIDTH || xPos < -getHitbox().getWidth() || yPos > MainFrame.HEIGHT || yPos < -getHitbox().getHeight()) {
             setDead(true);
         }
+    }
+
+    @Override
+    public void reverse() {
+
     }
 }

@@ -40,6 +40,29 @@ public class GameThread implements Runnable {
                 currentLevel.loadFile("testlevel.txt");
                 currentLevel.startLevel(player);
             }
+            if (player.isReversing()) {
+                boolean foundReverse = false;
+                MyArrayList<Stone> stones = currentLevel.getStones();
+                for (int i = 0; i < stones.size() && !foundReverse; i++) {
+                    if (stones.get(i).isReverse() && !stones.get(i).getObjectQueue().isEmpty()) {
+                        stones.set(i, stones.get(i).getObjectQueue().pollLast());
+                        foundReverse = true;
+                    } else {
+                        stones.get(i).setReverse(false);
+                        player.setReversing(false);
+                    }
+                }
+
+                if (player.isReverse() && !foundReverse) {
+                    if (!player.getObjectQueue().isEmpty()) {
+                        player = player.getObjectQueue().pollLast();
+                        foundReverse = true;
+                    } else {
+                        player.setReverse(false);
+                        player.setReversing(false);
+                    }
+                }
+            }
             fps = (int)(1 / (System.nanoTime()/1000000000.0 - time));
         }
     }

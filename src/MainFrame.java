@@ -21,7 +21,7 @@ public class MainFrame extends JFrame {
         this.setSize(WIDTH, HEIGHT);
         this.setResizable(false);
         player = new Player();
-        System.out.println(player.getHitbox().getX() + " " + WIDTH);
+        System.out.println(HEIGHT + " " + WIDTH);
         game = new GameThread(player);
         Thread thread = new Thread(game);
         thread.start();
@@ -167,12 +167,38 @@ public class MainFrame extends JFrame {
 
         @Override
         public void mousePressed(MouseEvent e) {
+            Point mousePos = MouseInfo.getPointerInfo().getLocation();
+            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+            boolean foundReverse = false;
+            for (int i = 0; i < stones.size() && !foundReverse; i++) {
+                if (stones.get(i).getHitbox().contains(mousePos)) {
+                    foundReverse = true;
+                    player.setReversing(true);
+                    stones.get(i).setReverse(true);
+                }
 
+            }
+            if (!foundReverse && player.getHitbox().contains(mousePos)) {
+                player.setReverse(true);
+                player.setReversing(true);
+            }
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            player.setReversing(false);
+            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+            boolean foundReverse = false;
+            for (int i = 0; i < stones.size() && !foundReverse; i++) {
+                if (stones.get(i).isReverse()) {
+                    foundReverse = true;
+                    stones.get(i).setReverse(false);
+                }
 
+            }
+            if (!foundReverse && player.isReverse()) {
+                player.setReverse(false);
+            }
         }
     }
 }

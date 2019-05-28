@@ -7,6 +7,11 @@ public class Vector {
         this.y = y;
     }
 
+    Vector (Vector vector) {
+        x = vector.getX();
+        y = vector.getY();
+    }
+
     public double getX() {
         return x;
     }

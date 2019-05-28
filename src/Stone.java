@@ -1,6 +1,6 @@
 import java.awt.*;
 
-public class Stone extends Terrain implements Movable, Updatable {
+public class Stone extends Terrain implements Movable, Updatable, Reversable<Stone> {
     private Vector vel;
     private static double yMaxVel = MainFrame.gridScreenRatio * 0.4;
     private static double gravityAcc = MainFrame.gridScreenRatio * 0.03;
@@ -10,15 +10,33 @@ public class Stone extends Terrain implements Movable, Updatable {
     private Player player;
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
-    public Stone (int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones, Player player) {
+    private boolean reverse;
+    private MyQueue<Stone> objectQueue;
+
+    public Stone(int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones, Player player) {
         super(x, y);
         vel = new Vector(0, 0);
         acc = new Vector(0, 0);
         onGround = false;
         pickedUp = false;
+        reverse = false;
+        objectQueue = new MyQueue<Stone>();
         this.terrain = terrain;
         this.stones = stones;
         this.player = player;
+    }
+
+    Stone (Stone stone) {
+        super((int)stone.getHitbox().getX(), (int)stone.getHitbox().getY());
+        vel = new Vector (stone.getVel());
+        acc = new Vector (stone.getAcc());
+        terrain = stone.getTerrain();
+        stones = stone.getStones();
+        player = stone.getPlayer();
+        onGround = stone.isOnGround();
+        reverse = true;
+        pickedUp = false;
+        objectQueue = new MyQueue<Stone>(stone.getObjectQueue());
     }
 
     @Override
@@ -55,8 +73,35 @@ public class Stone extends Terrain implements Movable, Updatable {
         this.pickedUp = pickedUp;
     }
 
+    @Override
+    public boolean isReverse() {
+        return reverse;
+    }
+
+    @Override
+    public void setReverse(boolean reverse) {
+        this.reverse = reverse;
+    }
+
+    @Override
+    public MyQueue<Stone> getObjectQueue() {
+        return objectQueue;
+    }
+
     public void setTerrain(Terrain[][] terrain) {
         this.terrain = terrain;
+    }
+
+    public Terrain[][] getTerrain() {
+        return terrain;
+    }
+
+    public MyArrayList<Stone> getStones() {
+        return stones;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     public void setPlayer(Player player) {
@@ -64,13 +109,16 @@ public class Stone extends Terrain implements Movable, Updatable {
     }
 
     @Override
-    public void update () {
+    public void update() {
+        if (!isReverse()) {
+            objectQueue.add(new Stone(this));
+        }
         if (isPickedUp()) {
             Rectangle pBox = player.getHitbox();
             if (player.getDirection().equals("right")) {
-                getHitbox().setLocation((int)(pBox.getX() + pBox.getWidth()), (int)(pBox.getY()));
+                getHitbox().setLocation((int) (pBox.getX() + pBox.getWidth()), (int) (pBox.getY()));
             } else {
-                getHitbox().setLocation((int)(pBox.getX() - getHitbox().getWidth()), (int)(pBox.getY()));
+                getHitbox().setLocation((int) (pBox.getX() - getHitbox().getWidth()), (int) (pBox.getY()));
             }
             getVel().setX(player.getVel().getX());
             getVel().setY(player.getVel().getY());
@@ -78,67 +126,67 @@ public class Stone extends Terrain implements Movable, Updatable {
             getAcc().setY(player.getAcc().getY());
             onGround = player.isOnGround();
         } else {
-            if (onGround && vel.getX() != 0 && !(Math.abs(vel.getX()) <= 1.5)) {
-                if (vel.getX() > 0) {
-                    acc.setX(-1.5);
-                } else {
-                    acc.setX(1.5);
+            if (!isReverse()) {
+                if (onGround && vel.getX() != 0 && !(Math.abs(vel.getX()) <= 1.5)) {
+                    if (vel.getX() > 0) {
+                        acc.setX(-1.5);
+                    } else {
+                        acc.setX(1.5);
+                    }
+                } else if (onGround) {
+                    acc.setX(0);
+                    vel.setX(0);
                 }
-            } else if (onGround){
-                acc.setX(0);
-                vel.setX(0);
-            }
 
-            if (vel.getY() > yMaxVel) {
-                acc.setY(0);
-            } else {
-                acc.setY(gravityAcc);
+                if (vel.getY() > yMaxVel) {
+                    acc.setY(0);
+                } else {
+                    acc.setY(gravityAcc);
+                }
+                vel.setX(vel.getX() + acc.getX());
+                vel.setY(vel.getY() + acc.getY());
+                tryMove((int) vel.getX(), (int) vel.getY());
             }
-            //System.out.println(hitBox.x + " " + hitBox.y);
-            //System.out.println(vel.getMagnitude());
-            vel.setX(vel.getX() + acc.getX());
-            vel.setY(vel.getY() + acc.getY());
-            tryMove((int) vel.getX(), (int) vel.getY());
         }
 
     }
 
-    private void tryMove (int xMove, int yMove) {
+    private void tryMove(int xMove, int yMove) {
         int yPos = 0;
         int xPos = 0;
         getHitbox().translate(xMove, 0);
         if (!checkWallCollisions()) {
             if (vel.getX() > 0) {
-                xPos = (int)(getHitbox().getX() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
+                xPos = (int) (getHitbox().getX() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
             } else {
-                xPos = (int)((getHitbox().getX() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
+                xPos = (int) ((getHitbox().getX() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
             }
             vel.setX(0);
-            getHitbox().setLocation(xPos, (int)getHitbox().getY());
+            getHitbox().setLocation(xPos, (int) getHitbox().getY());
         }
         getHitbox().translate(0, yMove);
         if (!checkWallCollisions()) {
             if (vel.getY() > 0) {
-                yPos = (int)(getHitbox().getY() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
+                yPos = (int) (getHitbox().getY() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
                 getVel().setY(0);
                 onGround = true;
             } else {
-                yPos = (int)((getHitbox().getY() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
+                yPos = (int) ((getHitbox().getY() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
                 onGround = false;
                 vel.setY(-vel.getY() * 0.2);
             }
-            getHitbox().setLocation((int)getHitbox().getX(), yPos);
+            getHitbox().setLocation((int) getHitbox().getX(), yPos);
         } else {
             onGround = false;
         }
     }
 
-    private boolean checkWallCollisions () {
+    private boolean checkWallCollisions() {
         boolean okMove = true;
         for (int i = 0; i < terrain.length && okMove; i++) {
             for (int j = 0; j < terrain[0].length && okMove; j++) {
                 if (terrain[i][j] instanceof Wall) {
-                    okMove = ((Wall)(terrain[i][j])).collide(getHitbox());
+                    okMove = ((Wall) (terrain[i][j])).collide(getHitbox());
                 }
             }
         }
@@ -152,11 +200,16 @@ public class Stone extends Terrain implements Movable, Updatable {
         }
         return okMove;
     }
-    
+
     public boolean collide(Rectangle hitbox) {
         if (hitbox.intersects(getHitbox())) {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void reverse() {
+
     }
 }

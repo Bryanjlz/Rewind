@@ -55,6 +55,14 @@ public class MyArrayList<T> {
     return -1;
   }
 
+  public void set (int index, T item) {
+    Node<T> temp = head;
+    for (int i = 0; i < index; i++) {
+      temp = temp.getNext();
+    }
+    temp.setItem(item);
+  }
+
   public void remove (int index) {
     Node<T> temp = head;
     for (int i = 0; i < index - 1; i++) {
