@@ -24,6 +24,7 @@ public class Level {
         player.setTerrain(terrain);
         player.setStones(stones);
         player.getHitbox().setLocation(playerLoc);
+        player.setObjectQueue(new MyQueue<Player>());
         player.setDead(false);
         player.startLevel();
     }

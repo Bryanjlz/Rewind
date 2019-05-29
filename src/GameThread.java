@@ -5,14 +5,16 @@ public class GameThread implements Runnable {
     private Level currentLevel;
     private Player player;
     private int fps;
+    MyArrayList<Pew> pews;
     public GameThread (Player player) {
         this.player = player;
         levels = new Level[10];
         levels[0] = new Level(player);
-        levels[0].loadFile("testlevel.txt");
+        levels[0].loadFile("levels/level1.txt");
         currentLevel = levels[0];
         currentLevel.startLevel(player);
         fps = 0;
+        pews = new MyArrayList<Pew>();
     }
 
     public void run() {
@@ -29,7 +31,7 @@ public class GameThread implements Runnable {
                 currentLevel.getStones().get(i).update();
             }
             if (currentLevel.isLevelFinished()) {
-                System.out.println("nice");
+                pews.add(new Pew(new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256)), new Font("Arial", (int) (Math.random() * 3), (int) (Math.random() * 50) + 5), (int) (Math.random() * MainFrame.WIDTH), (int) (Math.random() * MainFrame.HEIGHT)));
             }
             if (player.isDead()) {
                 try {
@@ -37,7 +39,7 @@ public class GameThread implements Runnable {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                currentLevel.loadFile("testlevel.txt");
+                currentLevel.loadFile("levels/level1.txt");
                 currentLevel.startLevel(player);
             }
             if (player.isReversing()) {
@@ -47,7 +49,7 @@ public class GameThread implements Runnable {
                     if (stones.get(i).isReverse() && !stones.get(i).getObjectQueue().isEmpty()) {
                         stones.set(i, stones.get(i).getObjectQueue().pollLast());
                         foundReverse = true;
-                    } else {
+                    } else if (stones.get(i).isReverse()) {
                         stones.get(i).setReverse(false);
                         player.setReversing(false);
                     }
@@ -55,7 +57,7 @@ public class GameThread implements Runnable {
 
                 if (player.isReverse() && !foundReverse) {
                     if (!player.getObjectQueue().isEmpty()) {
-                        player = player.getObjectQueue().pollLast();
+                        player.clone(player.getObjectQueue().pollLast());
                         foundReverse = true;
                     } else {
                         player.setReverse(false);

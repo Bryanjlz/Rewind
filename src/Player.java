@@ -67,7 +67,30 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         direction = player.getDirection();
         terrain = player.getTerrain();
         stones = player.getStones();
+        isReverse = true;
+        isReversing = true;
         objectQueue = new MyQueue<Player>(player.getObjectQueue());
+    }
+
+    public void clone (Player player) {
+        hitbox = player.getHitbox();
+        xMaxVel = player.getxMaxVel();
+        yMaxVel = player.getyMaxVel();
+        gravityAcc = player.getGravityAcc();
+        vel = player.getVel();
+        acc = player.getAcc();
+        isHoldingKey = player.isHoldingKey();
+        isHoldingStone = player.isHoldingStone();
+        heldStone = player.getHeldStone();
+        timePower = player.getTimePower();
+        onGround = false;
+        direction = player.getDirection();
+        terrain = player.getTerrain();
+        stones = player.getStones();
+        isReverse = player.isReverse();
+        isReversing = player.isReversing();
+        objectQueue = player.getObjectQueue();
+
     }
 
     public void setHitbox(Rectangle hitbox) {
@@ -313,10 +336,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private void placeDownStone () {
         heldStone.setPickedUp(false);
         isHoldingStone = false;
-        heldStone.getVel().setX(vel.getX());
-        heldStone.getVel().setY(vel.getY());
-        heldStone.getAcc().setX(acc.getX());
-        heldStone.getAcc().setY(acc.getY());
+        if (vel.getX() > 5) {
+            heldStone.getVel().setX(vel.getX() * 1.5);
+        }
+        if (vel.getY() < -5) {
+            heldStone.getVel().setY(vel.getY() * 1.5);
+        }
         heldStone = null;
     }
     

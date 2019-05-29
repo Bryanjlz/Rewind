@@ -89,7 +89,7 @@ public class MainFrame extends JFrame {
                     if (!player.isHoldLeft()) {
                         player.setHoldRight(true);
                         if (player.isHoldingStone() && player.getDirection().equals("left")) {
-                            Rectangle stoneBox = player.getHeldStone().getHitbox();
+                            Rectangle stoneBox = new Rectangle(player.getHeldStone().getHitbox());
                             int xMove = (int)(player.getHitbox().getWidth() + stoneBox.getWidth());
                             stoneBox.translate(xMove, 0);
                             Terrain[][] terrain = game.getCurrentLevel().getTerrain();
