@@ -10,11 +10,12 @@ import java.io.IOException;
 
 public class MainFrame extends JFrame {
     private GameThread game;
+    private Thread thread;
     private GamePanel panel;
     private Player player;
-    public static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
-    public static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
-    public static int gridScreenRatio;
+    static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
+    static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
+    static int gridScreenRatio;
     public MainFrame () {
         // create jframe
         super("Not a Nice Game");
@@ -23,10 +24,11 @@ public class MainFrame extends JFrame {
         player = new Player();
         System.out.println(HEIGHT + " " + WIDTH);
         game = new GameThread(player);
-        Thread thread = new Thread(game);
+        thread = new Thread(game);
         thread.start();
 
         panel = new GamePanel(game);
+        panel.setThread(thread);
         this.add(panel);
 
         MyKeyListener keyListener = new MyKeyListener();
@@ -50,13 +52,17 @@ public class MainFrame extends JFrame {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_W:
-                    player.setHoldUp(true);
+                    if (!player.isReversing()) {
+                        player.setHoldUp(true);
+                    }
                     break;
                 case KeyEvent.VK_S:
-                    player.setHoldDown(true);
+                    if (!player.isReversing()) {
+                        player.setHoldDown(true);
+                    }
                     break;
                 case KeyEvent.VK_A:
-                    if (!player.isHoldRight()) {
+                    if (!player.isHoldRight() && !player.isReversing()) {
                         player.setHoldLeft(true);
                         if (player.isHoldingStone() && player.getDirection().equals("right")) {
                             Rectangle stoneBox = new Rectangle(player.getHeldStone().getHitbox());
@@ -86,7 +92,7 @@ public class MainFrame extends JFrame {
                     }
                     break;
                 case KeyEvent.VK_D:
-                    if (!player.isHoldLeft()) {
+                    if (!player.isHoldLeft() && !player.isReversing()) {
                         player.setHoldRight(true);
                         if (player.isHoldingStone() && player.getDirection().equals("left")) {
                             Rectangle stoneBox = new Rectangle(player.getHeldStone().getHitbox());
@@ -168,24 +174,33 @@ public class MainFrame extends JFrame {
         @Override
         public void mousePressed(MouseEvent e) {
             Point mousePos = MouseInfo.getPointerInfo().getLocation();
-            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
-            boolean foundReverse = false;
-            for (int i = 0; i < stones.size() && !foundReverse; i++) {
-                if (stones.get(i).getHitbox().contains(mousePos)) {
-                    foundReverse = true;
-                    player.setReversing(true);
-                    stones.get(i).setReverse(true);
-                }
+            if (!game.isMenu()) {
+                MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+                boolean foundReverse = false;
+                for (int i = 0; i < stones.size() && !foundReverse; i++) {
+                    if (stones.get(i).getHitbox().contains(mousePos)) {
+                        foundReverse = true;
+                        player.setReversing(true);
+                        stones.get(i).setReverse(true);
+                    }
 
-            }
-            if (!foundReverse && player.getHitbox().contains(mousePos)) {
-                player.setReverse(true);
-                player.setReversing(true);
+                }
+                if (!foundReverse && player.getHitbox().contains(mousePos)) {
+                    player.setReverse(true);
+                    player.setReversing(true);
+                }
             }
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
+            Point mousePos = MouseInfo.getPointerInfo().getLocation();
+            if (game.isMenu()) {
+                if (game.getPlayHitbox().contains(mousePos)) {
+                    game.setMenu(false);
+
+                }
+            }
             player.setReversing(false);
             MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
             boolean foundReverse = false;

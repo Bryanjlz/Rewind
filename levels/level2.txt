@@ -1,0 +1,20 @@
+32
+18
+w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w w
+w x x x x x x x x x x x x x x x x x x x w x x x x x w x x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x w x x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x w x x x e w
+w x x x x x x x x x x x x x x x x x x x w x x x x x w x x w w w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x w x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x w x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x w x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x w x x x w
+w x x x x x x x x x x x x x x x x x x x w x x x x x x x x x x w
+w p x x x w w w x x x x x w w w x x x w w x x x x w x x x x x w
+w x x x x w x x x x x x x w x x x x x x w x x x x x x x x x x w
+w x s x x w x x x x x x x w x x x x x x x x w x x x x x x x x w
+w w w w w w w w w w w w w w x x x x x w w w w w w w w w w w w w

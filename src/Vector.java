@@ -27,4 +27,11 @@ public class Vector {
     public void setY(double y) {
         this.y = y;
     }
+
+    public boolean equals (Vector vector) {
+        if (x == vector.getX() && y == vector.getY()) {
+            return true;
+        }
+        return false;
+    }
 }

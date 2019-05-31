@@ -2,8 +2,10 @@ import java.awt.*;
 
 public class Stone extends Terrain implements Movable, Updatable, Reversable<Stone> {
     private Vector vel;
-    private static double yMaxVel = MainFrame.gridScreenRatio * 0.4;
-    private static double gravityAcc = MainFrame.gridScreenRatio * 0.03;
+    private  double yMaxVel;
+    private  double gravityAcc;
+    private double dragAcc;
+    private double frictionAcc;
     private Vector acc;
     private boolean onGround;
     private boolean pickedUp;
@@ -17,6 +19,10 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         super(x, y);
         vel = new Vector(0, 0);
         acc = new Vector(0, 0);
+        gravityAcc = MainFrame.gridScreenRatio * Player.GRAVITY_RATIO;
+        yMaxVel = MainFrame.gridScreenRatio * Player.Y_MAX_VEL_RATIO;
+        dragAcc = MainFrame.gridScreenRatio * Player.AIR_MOVE_ACC_RATIO;
+        frictionAcc = MainFrame.gridScreenRatio * Player.RUN_ACC_RATIO;
         onGround = false;
         pickedUp = false;
         reverse = false;
@@ -30,6 +36,10 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         super((int)stone.getHitbox().getX(), (int)stone.getHitbox().getY());
         vel = new Vector (stone.getVel());
         acc = new Vector (stone.getAcc());
+        gravityAcc = MainFrame.gridScreenRatio * Player.GRAVITY_RATIO;
+        yMaxVel = MainFrame.gridScreenRatio * Player.Y_MAX_VEL_RATIO;
+        dragAcc = MainFrame.gridScreenRatio * Player.AIR_MOVE_ACC_RATIO;
+        frictionAcc = MainFrame.gridScreenRatio * Player.RUN_ACC_RATIO;
         terrain = stone.getTerrain();
         stones = stone.getStones();
         player = stone.getPlayer();
@@ -110,7 +120,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
 
     @Override
     public void update() {
-        if (!isReverse()) {
+        if (!isReverse() && (getObjectQueue().isEmpty() || !equals(getObjectQueue().getLast()))) {
             objectQueue.add(new Stone(this));
         }
         if (isPickedUp()) {
@@ -122,33 +132,35 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
             }
             getVel().setX(player.getVel().getX());
             getVel().setY(player.getVel().getY());
-            getAcc().setX(player.getAcc().getX());
-            getAcc().setY(player.getAcc().getY());
             onGround = player.isOnGround();
         } else {
             if (!isReverse()) {
-                if (onGround && vel.getX() != 0 && !(Math.abs(vel.getX()) <= 1.5)) {
-                    if (vel.getX() > 0) {
-                        acc.setX(-1.5);
-                    } else {
-                        acc.setX(1.5);
-                    }
-                } else if (onGround) {
-                    acc.setX(0);
-                    vel.setX(0);
-                }
-
-                if (vel.getY() > yMaxVel) {
-                    acc.setY(0);
+                if (onGround) {
+                    applyDrag(frictionAcc);
                 } else {
-                    acc.setY(gravityAcc);
+                    applyDrag(dragAcc);
                 }
+                acc.setY(gravityAcc);
                 vel.setX(vel.getX() + acc.getX());
                 vel.setY(vel.getY() + acc.getY());
                 tryMove((int) vel.getX(), (int) vel.getY());
             }
         }
 
+    }
+
+    private void applyDrag (double drag) {
+        if (Math.abs(vel.getX()) <= frictionAcc) {
+            vel.setX(0);
+            acc.setX(0);
+        }
+
+        if (acc.getX() > vel.getX()) {
+            acc.setX(drag);
+        }
+        if (acc.getX() < vel.getX()) {
+            acc.setX(-drag);
+        }
     }
 
     private void tryMove(int xMove, int yMove) {
@@ -161,7 +173,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
             } else {
                 xPos = (int) ((getHitbox().getX() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
             }
-            vel.setX(0);
+            getVel().setX(0);
             getHitbox().setLocation(xPos, (int) getHitbox().getY());
         }
         getHitbox().translate(0, yMove);
@@ -211,5 +223,18 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
     @Override
     public void reverse() {
 
+    }
+
+    private boolean equals (Stone stone) {
+        if (!stone.getHitbox().equals(getHitbox())) {
+            return false;
+        }
+        if (!stone.getVel().equals(getVel())) {
+            return false;
+        }
+        if (!stone.getAcc().equals(getAcc())) {
+            return false;
+        }
+        return true;
     }
 }

@@ -4,6 +4,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private double gravityAcc;
     private double xMaxVel;
     private double yMaxVel;
+    private double runAcc;
+    private double airMoveAcc;
     private Vector vel;
     private Vector acc;
     private boolean isHoldingKey;
@@ -22,22 +24,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private boolean isReverse;
     private boolean isReversing;
     private MyQueue<Player> objectQueue;
-
-    Player (int x, int y) {
-        hitbox = new Rectangle (x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
-        xMaxVel = MainFrame.gridScreenRatio * 0.2;
-        yMaxVel = MainFrame.gridScreenRatio * 0.4;
-        gravityAcc = MainFrame.gridScreenRatio * 0.03;
-        vel = new Vector(0, 0);
-        acc = new Vector(0, gravityAcc);
-        isHoldingKey = false;
-        isHoldingStone = false;
-        heldStone = null;
-        timePower = 0;
-        onGround = false;
-        direction = "left";
-        objectQueue = new MyQueue<Player>();
-    }
+    static final double GRAVITY_RATIO = 0.15;
+    static final double X_MAX_VEL_RATIO = 0.4;
+    static final double Y_MAX_VEL_RATIO = 0.3;
+    static final double RUN_ACC_RATIO = 0.01;
+    static final double AIR_MOVE_ACC_RATIO = 0.005;
 
     Player() {
         hitbox = new Rectangle (0, 0, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
@@ -52,11 +43,17 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         objectQueue = new MyQueue<Player>();
     }
 
+    /**
+     * Creates a shallow copy of another player.
+     * @param player Player to copy.
+     */
     Player(Player player) {
         hitbox = new Rectangle (player.getHitbox());
         xMaxVel = player.getxMaxVel();
         yMaxVel = player.getyMaxVel();
         gravityAcc = player.getGravityAcc();
+        runAcc = player.getRunAcc();
+        airMoveAcc = player.getAirMoveAcc();
         vel = new Vector(player.getVel());
         acc = new Vector(player.getAcc());
         isHoldingKey = false;
@@ -72,11 +69,17 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         objectQueue = new MyQueue<Player>(player.getObjectQueue());
     }
 
+    /**
+     * Clones another Player object to this object to not have to re-reference everything that requires player
+     * @param player Player to copy.
+     */
     public void clone (Player player) {
         hitbox = player.getHitbox();
         xMaxVel = player.getxMaxVel();
         yMaxVel = player.getyMaxVel();
         gravityAcc = player.getGravityAcc();
+        runAcc = player.getRunAcc();
+        airMoveAcc = player.getAirMoveAcc();
         vel = player.getVel();
         acc = player.getAcc();
         isHoldingKey = player.isHoldingKey();
@@ -248,10 +251,28 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         return yMaxVel;
     }
 
+    public double getRunAcc() {
+        return runAcc;
+    }
+
+    public void setRunAcc(double runAcc) {
+        this.runAcc = runAcc;
+    }
+
+    public double getAirMoveAcc() {
+        return airMoveAcc;
+    }
+
+    public void setAirMoveAcc(double airMoveAcc) {
+        this.airMoveAcc = airMoveAcc;
+    }
+
     void startLevel() {
-        xMaxVel = MainFrame.gridScreenRatio * 0.2;
-        yMaxVel = MainFrame.gridScreenRatio * 0.4;
-        gravityAcc = MainFrame.gridScreenRatio * 0.03;
+        xMaxVel = MainFrame.gridScreenRatio * X_MAX_VEL_RATIO;
+        yMaxVel = MainFrame.gridScreenRatio * Y_MAX_VEL_RATIO;
+        gravityAcc = MainFrame.gridScreenRatio * GRAVITY_RATIO;
+        runAcc = MainFrame.gridScreenRatio * RUN_ACC_RATIO;
+        airMoveAcc = MainFrame.gridScreenRatio * AIR_MOVE_ACC_RATIO;
     }
 
     @Override
@@ -261,30 +282,36 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 jump();
             }
             if (isHoldLeft()) {
-                if (vel.getX() < xMaxVel) {
+                if (vel.getX() > -xMaxVel) {
                     if (onGround && (acc.getX() < vel.getX())) {
-                        acc.setX(-1.5);
+                        acc.setX(-runAcc);
                     } else {
-                        acc.setX(-0.5);
+                        acc.setX(-airMoveAcc);
                     }
+                } else {
+                    acc.setX(0);
                 }
             } else if (isHoldRight()) {
                 if (vel.getX() < xMaxVel) {
                     if (onGround && (acc.getX() > vel.getX())) {
-                        acc.setX(1.5);
+                        acc.setX(runAcc);
                     } else {
-                        acc.setX(0.5);
+                        acc.setX(airMoveAcc);
                     }
+                } else {
+                    acc.setX(0);
                 }
             } else if (((vel.getX()) < 0 && (acc.getX() < 0)) || ((vel.getX()) > 0 && (acc.getX() > 0))) {
                 vel.setX(0);
                 acc.setX(0);
             } else if (onGround && getVel().getX() != 0) {
                 if (getVel().getX() > 0) {
-                    getAcc().setX(-1.5);
+                    getAcc().setX(-runAcc);
                 } else {
-                    getAcc().setX(1.5);
+                    getAcc().setX(runAcc);
                 }
+            } else {
+                acc.setX(0);
             }
 
             if (vel.getY() > yMaxVel) {
@@ -298,14 +325,19 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             vel.setY(vel.getY() + acc.getY());
             tryMove((int) vel.getX(), (int) vel.getY());
             checkInScreen();
-            getObjectQueue().add(new Player(this));
+            if (getObjectQueue().isEmpty() || !equals(getObjectQueue().getLast())) {
+                getObjectQueue().add(new Player(this));
+            }
+        } else {
+            heldStone.setPickedUp(false);
+            heldStone = null;
         }
     }
     
     void interact() {
         if (direction.equals("left")) {
             if (!isHoldingStone()) {
-                Point p = new Point((int)(getHitbox().getX() - MainFrame.gridScreenRatio * 0.2), (int)getHitbox().getY());
+                Point p = new Point((int)(getHitbox().getX() - MainFrame.gridScreenRatio * 0.2), (int)(getHitbox().getY() + getHitbox().getHeight() / 2));
                 pickUpStone(p);
             } else {
                 placeDownStone();
@@ -336,11 +368,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private void placeDownStone () {
         heldStone.setPickedUp(false);
         isHoldingStone = false;
-        if (vel.getX() > 5) {
-            heldStone.getVel().setX(vel.getX() * 1.5);
-        }
-        if (vel.getY() < -5) {
-            heldStone.getVel().setY(vel.getY() * 1.5);
+        heldStone.getVel().setX(vel.getX());
+        if (getVel().getY() < 0) {
+            heldStone.getVel().setY(-MainFrame.gridScreenRatio * 0.35);
+        } else {
+            heldStone.getVel().setY(0);
         }
         heldStone = null;
     }
@@ -464,5 +496,18 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     @Override
     public void reverse() {
 
+    }
+
+    private boolean equals(Player player) {
+        if (!getHitbox().equals(player.getHitbox())) {
+            return false;
+        }
+        if (!getVel().equals(player.getVel())) {
+            return false;
+        }
+        if (!getAcc().equals(player.getAcc())) {
+            return false;
+        }
+        return true;
     }
 }
