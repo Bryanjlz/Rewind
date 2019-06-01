@@ -145,6 +145,11 @@ public class MainFrame extends JFrame {
                     player.setHoldRight(false);
                     player.getAcc().setX(player.getAcc().getX() * -1);
                     break;
+                case KeyEvent.VK_R:
+                    if (!game.isMenu()) {
+                        panel.setTransition(true);
+                        game.setRestartLevel(true);
+                    }
                 case KeyEvent.VK_SPACE:
                     player.interact();
                     break;

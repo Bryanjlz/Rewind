@@ -19,8 +19,16 @@ public class Level {
         this.player = player;
     }
 
-    public void startLevel (Player player) {
+    public void startLevel (Player player, int level) {
+        try {
+            Thread.sleep(450);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        loadFile("levels/level" + level + ".txt");
         this.player = player;
+        player.setVel(new Vector(0,0));
+        player.setAcc(new Vector(0, 0));
         player.setTerrain(terrain);
         player.setStones(stones);
         player.getHitbox().setLocation(playerLoc);
@@ -29,7 +37,7 @@ public class Level {
         player.startLevel();
     }
 
-    public void loadFile (String path) {
+    private void loadFile (String path) {
         try {
             File file = new File(path);
             Scanner fileReader = new Scanner(file);

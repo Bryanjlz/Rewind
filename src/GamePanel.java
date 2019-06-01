@@ -66,17 +66,17 @@ public class GamePanel extends JPanel {
         }
         if (transition) {
             if (transAlpha < 255 && !passedBlack) {
-                transAlpha += 1;
+                transAlpha += 15;
             } else {
                 passedBlack = true;
-                transAlpha -= 1;
+                transAlpha -= 15;
                 if (transAlpha == 0) {
                     transition = false;
                     passedBlack = false;
                 }
             }
             try {
-                Thread.sleep(2);
+                Thread.sleep(27);
             } catch (Exception e) {
                 e.printStackTrace();
             }

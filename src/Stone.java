@@ -4,7 +4,6 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
     private Vector vel;
     private  double yMaxVel;
     private  double gravityAcc;
-    private double dragAcc;
     private double frictionAcc;
     private Vector acc;
     private boolean onGround;
@@ -14,6 +13,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
     private MyArrayList<Stone> stones;
     private boolean reverse;
     private MyQueue<Stone> objectQueue;
+    private static double FRICTION_ACC_RATIO = 0.017;
 
     public Stone(int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones, Player player) {
         super(x, y);
@@ -21,8 +21,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         acc = new Vector(0, 0);
         gravityAcc = MainFrame.gridScreenRatio * Player.GRAVITY_RATIO;
         yMaxVel = MainFrame.gridScreenRatio * Player.Y_MAX_VEL_RATIO;
-        dragAcc = MainFrame.gridScreenRatio * Player.AIR_MOVE_ACC_RATIO;
-        frictionAcc = MainFrame.gridScreenRatio * Player.RUN_ACC_RATIO;
+        frictionAcc = MainFrame.gridScreenRatio * FRICTION_ACC_RATIO;
         onGround = false;
         pickedUp = false;
         reverse = false;
@@ -38,7 +37,6 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         acc = new Vector (stone.getAcc());
         gravityAcc = MainFrame.gridScreenRatio * Player.GRAVITY_RATIO;
         yMaxVel = MainFrame.gridScreenRatio * Player.Y_MAX_VEL_RATIO;
-        dragAcc = MainFrame.gridScreenRatio * Player.AIR_MOVE_ACC_RATIO;
         frictionAcc = MainFrame.gridScreenRatio * Player.RUN_ACC_RATIO;
         terrain = stone.getTerrain();
         stones = stone.getStones();
@@ -46,6 +44,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         onGround = stone.isOnGround();
         reverse = true;
         pickedUp = false;
+        onGround = false;
         objectQueue = new MyQueue<Stone>(stone.getObjectQueue());
     }
 
@@ -126,24 +125,25 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         if (isPickedUp()) {
             Rectangle pBox = player.getHitbox();
             if (player.getDirection().equals("right")) {
-                getHitbox().setLocation((int) (pBox.getX() + pBox.getWidth()), (int) (pBox.getY()));
+                getHitbox().setLocation((int) (pBox.getX() + pBox.getWidth()), (int) (pBox.getY() + pBox.getHeight() - getHitbox().getHeight()));
             } else {
-                getHitbox().setLocation((int) (pBox.getX() - getHitbox().getWidth()), (int) (pBox.getY()));
+                getHitbox().setLocation((int) (pBox.getX() - getHitbox().getWidth()), (int) (pBox.getY() + pBox.getHeight() - getHitbox().getHeight()));
             }
             getVel().setX(player.getVel().getX());
             getVel().setY(player.getVel().getY());
-            onGround = player.isOnGround();
         } else {
             if (!isReverse()) {
+                tryMove((int) vel.getX(), (int) vel.getY());
                 if (onGround) {
                     applyDrag(frictionAcc);
-                } else {
-                    applyDrag(dragAcc);
                 }
-                acc.setY(gravityAcc);
+                if (vel.getY() > yMaxVel) {
+                    acc.setY(0);
+                } else {
+                    acc.setY(gravityAcc);
+                }
                 vel.setX(vel.getX() + acc.getX());
                 vel.setY(vel.getY() + acc.getY());
-                tryMove((int) vel.getX(), (int) vel.getY());
             }
         }
 
@@ -154,7 +154,6 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
             vel.setX(0);
             acc.setX(0);
         }
-
         if (acc.getX() > vel.getX()) {
             acc.setX(drag);
         }
@@ -218,11 +217,6 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
             return false;
         }
         return true;
-    }
-
-    @Override
-    public void reverse() {
-
     }
 
     private boolean equals (Stone stone) {

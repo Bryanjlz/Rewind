@@ -8,7 +8,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private double airMoveAcc;
     private Vector vel;
     private Vector acc;
-    private boolean isHoldingKey;
+    private MyArrayList<Key> keys;
     private boolean isHoldingStone;
     private Stone heldStone;
     private int timePower;
@@ -24,17 +24,17 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private boolean isReverse;
     private boolean isReversing;
     private MyQueue<Player> objectQueue;
-    static final double GRAVITY_RATIO = 0.15;
-    static final double X_MAX_VEL_RATIO = 0.4;
-    static final double Y_MAX_VEL_RATIO = 0.3;
-    static final double RUN_ACC_RATIO = 0.01;
+    static final double GRAVITY_RATIO = 0.03;
+    static final double X_MAX_VEL_RATIO = 0.15;
+    static final double Y_MAX_VEL_RATIO = 0.4;
+    static final double RUN_ACC_RATIO = 0.02;
     static final double AIR_MOVE_ACC_RATIO = 0.005;
 
     Player() {
         hitbox = new Rectangle (0, 0, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
         vel = new Vector(0, 0);
         acc = new Vector(0, gravityAcc);
-        isHoldingKey = false;
+        keys = new MyArrayList<Key>();
         isHoldingStone = false;
         heldStone = null;
         timePower = 0;
@@ -56,7 +56,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         airMoveAcc = player.getAirMoveAcc();
         vel = new Vector(player.getVel());
         acc = new Vector(player.getAcc());
-        isHoldingKey = false;
         isHoldingStone = false;
         heldStone = null;
         timePower = player.getTimePower();
@@ -82,7 +81,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         airMoveAcc = player.getAirMoveAcc();
         vel = player.getVel();
         acc = player.getAcc();
-        isHoldingKey = player.isHoldingKey();
         isHoldingStone = player.isHoldingStone();
         heldStone = player.getHeldStone();
         timePower = player.getTimePower();
@@ -118,12 +116,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         return acc;
     }
 
-    public void setHoldingKey(boolean holdingKey) {
-        isHoldingKey = holdingKey;
-    }
-
-    public boolean isHoldingKey() {
-        return isHoldingKey;
+    public void setAcc(Vector acc) {
+        this.acc = acc;
     }
 
     public void setHoldingStone(boolean holdingStone) {
@@ -152,10 +146,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
     public void setHoldDown(boolean holdDown) {
         this.holdDown = holdDown;
-    }
-
-    public boolean isHoldDown() {
-        return holdDown;
     }
 
     public void setHoldLeft(boolean holdLeft) {
@@ -310,8 +300,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 } else {
                     getAcc().setX(runAcc);
                 }
-            } else {
-                acc.setX(0);
             }
 
             if (vel.getY() > yMaxVel) {
@@ -365,12 +353,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
     }
 
-    private void placeDownStone () {
+    public void placeDownStone () {
         heldStone.setPickedUp(false);
         isHoldingStone = false;
         heldStone.getVel().setX(vel.getX());
         if (getVel().getY() < 0) {
-            heldStone.getVel().setY(-MainFrame.gridScreenRatio * 0.35);
+            heldStone.getVel().setY(-MainFrame.gridScreenRatio * 0.3);
         } else {
             heldStone.getVel().setY(0);
         }
@@ -404,6 +392,9 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             for (int j = 0; j < terrain[0].length; j++) {
                 if (terrain[i][j] instanceof Exit) {
                     ((Exit)terrain[i][j]).collide(getHitbox());
+                } else if (terrain[i][j] instanceof Key) {
+                    keys.add((Key)terrain[i][j]);
+                    ((Key)terrain[i][j]).setPickedUp(true);
                 }
             }
         }
@@ -454,12 +445,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 }
             } else {
                 if (wBox.getX() < getHitbox().getX()) {
-                    xPos = (int) (wBox.getX() + getHitbox().getWidth());
+                    xPos = (int) (wBox.getX() + wBox.getWidth());
                     if (isHoldingStone()) {
                         xPos += heldStone.getHitbox().getWidth();
                     }
                 } else {
-                    xPos = (int) (wBox.getX() - wBox.getWidth());
+                    xPos = (int) (wBox.getX() - getHitbox().getWidth());
                 }
             }
             if (isHoldingStone()) {
@@ -470,13 +461,14 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         } else {
             int yPos = 0;
             if (getVel().getY() > 0) {
-                yPos = (int) (getHitbox().getY() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
+                yPos = (int) (wBox.getY() - getHitbox().getHeight());
                 getVel().setY(0);
                 onGround = true;
             } else {
-                yPos = (int) ((getHitbox().getY() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
+                yPos = (int) (wBox.getY() + wBox.getHeight());
                 onGround = false;
-                getVel().setY(-getVel().getY() * 0.2);
+                //getVel().setY(-getVel().getY() * 0.2);
+                getVel().setY(0);
             }
             if (isHoldingStone()) {
                 heldStone.getHitbox().translate(0, (int) (yPos - getHitbox().getY()));
@@ -493,10 +485,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
     }
 
-    @Override
-    public void reverse() {
-
-    }
 
     private boolean equals(Player player) {
         if (!getHitbox().equals(player.getHitbox())) {
