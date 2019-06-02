@@ -11,7 +11,7 @@ public class GameThread implements Runnable {
     MyArrayList<Pew> pews;
 
     public GameThread (Player player) {
-        level = 1;
+        level = 5;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);

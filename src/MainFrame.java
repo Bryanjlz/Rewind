@@ -1,16 +1,12 @@
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 
 public class MainFrame extends JFrame {
     private GameThread game;
-    private Thread thread;
     private GamePanel panel;
     private Player player;
     static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
@@ -24,7 +20,7 @@ public class MainFrame extends JFrame {
         player = new Player();
         System.out.println(HEIGHT + " " + WIDTH);
         game = new GameThread(player);
-        thread = new Thread(game);
+        Thread thread = new Thread(game);
         thread.start();
 
         panel = new GamePanel(game);
@@ -54,11 +50,6 @@ public class MainFrame extends JFrame {
                 case KeyEvent.VK_W:
                     if (!player.isReversing()) {
                         player.setHoldUp(true);
-                    }
-                    break;
-                case KeyEvent.VK_S:
-                    if (!player.isReversing()) {
-                        player.setHoldDown(true);
                     }
                     break;
                 case KeyEvent.VK_A:
@@ -134,9 +125,6 @@ public class MainFrame extends JFrame {
                 case KeyEvent.VK_W:
                     player.setHoldUp(false);
                     break;
-                case KeyEvent.VK_S:
-                    player.setHoldDown(false);
-                    break;
                 case KeyEvent.VK_A:
                     player.setHoldLeft(false);
                     player.getAcc().setX(player.getAcc().getX() * -1);
@@ -209,15 +197,56 @@ public class MainFrame extends JFrame {
             player.setReversing(false);
             MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
             boolean foundReverse = false;
+            Terrain[][] terrain = game.getCurrentLevel().getTerrain();
             for (int i = 0; i < stones.size() && !foundReverse; i++) {
-                if (stones.get(i).isReverse()) {
+                Stone stone = stones.get(i);
+                if (stone.isReverse()) {
                     foundReverse = true;
-                    stones.get(i).setReverse(false);
+                    stone.setReverse(false);
+                    boolean foundCollide = false;
+                    if (stone.getHitbox().intersects(player.getHitbox())) {
+                        foundCollide = true;
+                        panel.setTransition(true);
+                        game.setRestartLevel(true);
+                    }
+                    for (int j = 0; j < stones.size() && !foundCollide; j++) {
+                        if (stone != stones.get(j) && stone.getHitbox().intersects(stones.get(j).getHitbox())) {
+                            foundCollide = true;
+                            panel.setTransition(true);
+                            game.setRestartLevel(true);
+                        }
+                    }
+                    for (int j = 0; j < terrain.length && !foundCollide; j++) {
+                        for (int k = 0; k < terrain[0].length && !foundCollide; k++) {
+                            if (terrain[j][k] instanceof Wall && stone.getHitbox().intersects(terrain[j][k].getHitbox())) {
+                                foundCollide = true;
+                                panel.setTransition(true);
+                                game.setRestartLevel(true);
+                            }
+                        }
+                    }
                 }
 
             }
             if (!foundReverse && player.isReverse()) {
                 player.setReverse(false);
+                boolean foundCollide = false;
+                for (int j = 0; j < stones.size() && !foundCollide; j++) {
+                    if (player.getHitbox().intersects(stones.get(j).getHitbox())) {
+                        foundCollide = true;
+                        panel.setTransition(true);
+                        game.setRestartLevel(true);
+                    }
+                }
+                for (int j = 0; j < terrain.length && !foundCollide; j++) {
+                    for (int k = 0; k < terrain[0].length && !foundCollide; k++) {
+                        if (terrain[j][k] instanceof Wall && player.getHitbox().intersects(terrain[j][k].getHitbox())) {
+                            foundCollide = true;
+                            panel.setTransition(true);
+                            game.setRestartLevel(true);
+                        }
+                    }
+                }
             }
         }
     }

@@ -101,17 +101,22 @@ public class GamePanel extends JPanel {
         Terrain[][] terrain = currentLevel.getTerrain();
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
-                if (terrain[i][j] instanceof Wall) {
-                    g.setColor(Color.BLACK);
-                    Rectangle hitbox = terrain[i][j].getHitbox();
-                    //System.out.println(hitBox.getX() + " " + hitBox.getY());
-                    g.drawRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
-                } else if (terrain[i][j] instanceof Exit) {
+
+                if (terrain[i][j] instanceof Exit) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
                     //System.out.println(hitBox.getX() + " " + hitBox.getY());
                     g.setColor(Color.BLACK);
                     g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
                     g.setColor(Color.BLACK);
+                } else if (terrain[i][j] instanceof Door) {
+                    Rectangle hitbox = terrain[i][j].getHitbox();
+                    g.setColor(Color.ORANGE);
+                    g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+                } else if (terrain[i][j] instanceof Wall) {
+                    g.setColor(Color.BLACK);
+                    Rectangle hitbox = terrain[i][j].getHitbox();
+                    //System.out.println(hitBox.getX() + " " + hitBox.getY());
+                    g.drawRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
                 }
             }
         }
@@ -122,6 +127,14 @@ public class GamePanel extends JPanel {
             if (currentLevel.getStones().get(i).isReverse()) {
                 g.setColor(Color.BLACK);
                 g.drawString ("Rewiinndd",(int)(hitbox.getX()+ hitbox.getWidth() / 4), (int)(hitbox.getY() + hitbox.getHeight() / 2));
+            }
+        }
+
+        for (int i = 0; i < player.getKeys().size(); i++) {
+            if (!player.getKeys().get(i).isPickedUp()) {
+                Rectangle hitbox = player.getKeys().get(i).getHitbox();
+                g.setColor(Color.YELLOW);
+                g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
             }
         }
     }

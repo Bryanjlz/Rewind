@@ -196,14 +196,14 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         boolean okMove = true;
         for (int i = 0; i < terrain.length && okMove; i++) {
             for (int j = 0; j < terrain[0].length && okMove; j++) {
-                if (terrain[i][j] instanceof Wall) {
-                    okMove = ((Wall) (terrain[i][j])).collide(getHitbox());
+                if ((terrain[i][j] instanceof Wall && !(terrain[i][j] instanceof Door)) || (terrain[i][j] instanceof Door && !((Door)terrain[i][j]).isUnlocked())) {
+                    okMove = !((Wall) (terrain[i][j])).collide(getHitbox());
                 }
             }
         }
         for (int i = 0; i < stones.size() && okMove; i++) {
             if (stones.get(i) != this) {
-                okMove = stones.get(i).collide(getHitbox());
+                okMove = !stones.get(i).collide(getHitbox());
             }
         }
         if (!isPickedUp() && getHitbox().intersects(player.getHitbox())) {
@@ -214,9 +214,9 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
 
     public boolean collide(Rectangle hitbox) {
         if (hitbox.intersects(getHitbox())) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean equals (Stone stone) {

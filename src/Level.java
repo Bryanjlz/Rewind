@@ -7,6 +7,7 @@ public class Level {
     private Terrain[][] terrain;
     private MyArrayList<Stone> stones;
     private MyArrayList<MovingWall> movingWalls;
+    private MyArrayList<Key> keys;
     private boolean levelFinished;
     private Player player;
     private Point playerLoc;
@@ -15,6 +16,7 @@ public class Level {
         terrain = new Terrain[18][32];
         stones = new MyArrayList<Stone>();
         movingWalls = new MyArrayList<MovingWall>();
+        keys = new MyArrayList<Key>();
         this.levelFinished = false;
         this.player = player;
     }
@@ -29,6 +31,7 @@ public class Level {
         this.player = player;
         player.setVel(new Vector(0,0));
         player.setAcc(new Vector(0, 0));
+        player.setKeys(keys);
         player.setTerrain(terrain);
         player.setStones(stones);
         player.getHitbox().setLocation(playerLoc);
@@ -46,7 +49,7 @@ public class Level {
             terrain = new Terrain[terrainHeight][terrainWidth];
             stones = new MyArrayList<>();
             MainFrame.gridScreenRatio = MainFrame.HEIGHT / terrainHeight;
-            player.getHitbox().setSize(MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
+            player.getHitbox().setSize((int)(MainFrame.gridScreenRatio * 0.75), MainFrame.gridScreenRatio);
             for (int i = 0; i < terrainHeight; i++) {
                 for (int j = 0; j < terrainWidth; j++) {
                     String terrainString = fileReader.next();
@@ -60,6 +63,10 @@ public class Level {
                         stones.add(new Stone (j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, terrain, stones, player));
                     } else if (terrainString.equals("p")) {
                         playerLoc = new Point(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio);
+                    } else if (terrainString.charAt(0) == 'k') {
+                        keys.add(new Key(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, Character.getNumericValue(terrainString.charAt(1))));
+                    } else if (terrainString.charAt(0) == 'd') {
+                        terrain[i][j] = new Door(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, Character.getNumericValue(terrainString.charAt(1)));
                     }
                 }
             }

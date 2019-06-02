@@ -1,10 +1,10 @@
 import java.awt.*;
 
-public class Door extends Terrain {
+public class Door extends Wall {
     private int id;
     private boolean unlocked;
     public Door(int x, int y, int id) {
-        super(x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
+        super(x, y);
         this.id = id;
     }
 
@@ -32,9 +32,9 @@ public class Door extends Terrain {
 
     public boolean collide(Rectangle pBox) {
         if (pBox.intersects(getHitbox())) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 }
 

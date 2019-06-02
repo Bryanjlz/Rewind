@@ -9,6 +9,18 @@ public class Key extends Terrain {
         pickedUp = false;
     }
 
+    public Key (Key key) {
+        super ((int)key.getHitbox().getX(), (int)key.getHitbox().getY());
+        id = key.getId();
+        pickedUp = key.isPickedUp();
+    }
+
+    public void clone (Key key) {
+        setHitbox(new Rectangle(key.getHitbox()));
+        id = key.getId();
+        pickedUp = key.isPickedUp();
+    }
+
     @Override
     public Rectangle getHitbox() {
         return super.getHitbox();
@@ -33,8 +45,8 @@ public class Key extends Terrain {
 
     public boolean collide(Rectangle pBox) {
         if (pBox.intersects(getHitbox())) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 }

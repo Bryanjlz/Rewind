@@ -5,6 +5,11 @@ public class MyArrayList<T> {
     head = null;
   }
 
+
+  private Node<T> getHead () {
+    return head;
+  }
+
   public void add(T item) {
     Node<T> temp = head;
 

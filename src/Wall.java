@@ -17,8 +17,8 @@ public class Wall extends Terrain {
 
   public boolean collide(Rectangle pBox) {
     if (pBox.intersects(getHitbox())) {
-      return false;
+      return true;
     }
-    return true;
+    return false;
   }
 }
