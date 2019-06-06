@@ -1,5 +1,9 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
 public class GamePanel extends JPanel {
     private GameThread game;
     private Thread thread;
@@ -8,6 +12,20 @@ public class GamePanel extends JPanel {
     private boolean transition;
     private int transAlpha;
     private boolean passedBlack;
+    static final int NOT_HOLD_BOX = 0;
+    static final int HOLD_BOX = 1;
+    static final int RIGHT = 0;
+    static final int LEFT = 1;
+    static final int FACE_FORWARD = 2;
+    static final int LOCKED = 0;
+    static final int UNLOCKED = 1;
+    private BufferedImage[][][] run;
+    private BufferedImage[][] stand;
+    private BufferedImage[][] slide;
+    private BufferedImage[][] jump;
+    private BufferedImage wall;
+    private BufferedImage key;
+    private BufferedImage[] door;
 
     public GamePanel (GameThread game) {
         super();
@@ -16,18 +34,89 @@ public class GamePanel extends JPanel {
         this.currentLevel = game.getCurrentLevel();
         transAlpha = 0;
         passedBlack = false;
+        run = new BufferedImage[2][2][16];
+        stand = new BufferedImage[3][8];
+        slide = new BufferedImage[2][2];
+        jump = new BufferedImage[2][2];
+        door = new BufferedImage[2];
     }
-
     public void setThread(Thread thread) {
         this.thread = thread;
     }
 
-    public boolean isTransition() {
-        return transition;
-    }
-
     public void setTransition(boolean transition) {
         this.transition = transition;
+    }
+
+    private void loadImages() {
+        // Load player run images
+        for (int i = 0; i < run.length; i++) {
+            for (int j = 0; j < run[0].length; j++) {
+                for (int k = 0; k < run[0][0].length; k++) {
+                    int playerNum = i * run[0].length * run[0][0].length + j * run[0][0].length + k;
+                    File file = new File("assets/images/player/run/player" + playerNum + ".png");
+                    try {
+                        run[i][j][k] = ImageIO.read(file);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+        // Load player stand images
+        for (int i = 0; i < stand.length; i++) {
+            for (int j = 0; j < stand[0].length; j++) {
+                int playerNum = i * stand[0].length + j;
+                File file = new File("assets/images/player/stand/player" + playerNum + ".png");
+                try {
+                    stand[i][j] = ImageIO.read(file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // Load player slide images
+        for (int i = 0; i < slide.length; i++) {
+            for (int j = 0; j < slide[0].length; j++) {
+                int playerNum = i * slide[0].length + j;
+                File file = new File ("assets/images/player/slide/player" + playerNum + ".png");
+                try {
+                    slide[i][j] = ImageIO.read(file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // Load player jump images
+        for (int i = 0; i < jump.length; i++) {
+            for (int j = 0; j < jump[0].length; j++) {
+                int playerNum = i * jump[0].length + j;
+                File file = new File ("assets/images/player/jump/player" + playerNum + ".png");
+                try {
+                    jump[i][j] = ImageIO.read(file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // Load terrain block
+        try {
+            key = ImageIO.read(new File("assets/images/terrain/key.png"));
+            wall = ImageIO.read(new File("assets/images/terrain/wall.png"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        for (int i = 0; i < door.length; i++) {
+            try {
+                door[i] = ImageIO.read(new File("assets/images/terrain/door" + (i + 1) + ".png"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void paintComponent (Graphics g) {
@@ -68,6 +157,13 @@ public class GamePanel extends JPanel {
             if (transAlpha < 255 && !passedBlack) {
                 transAlpha += 15;
             } else {
+                if (transAlpha == 255) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 passedBlack = true;
                 transAlpha -= 15;
                 if (transAlpha == 0) {

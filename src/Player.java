@@ -23,6 +23,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private boolean isReverse;
     private boolean isReversing;
     private MyQueue<Player> objectQueue;
+
     static final double GRAVITY_RATIO = 0.03;
     static final double X_MAX_VEL_RATIO = 0.15;
     static final double Y_MAX_VEL_RATIO = 0.38;
