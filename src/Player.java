@@ -6,24 +6,28 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private double yMaxVel;
     private double runAcc;
     private double airMoveAcc;
-    private Vector vel;
-    private Vector acc;
+    private MyVector vel;
+    private MyVector acc;
     private MyArrayList<Key> keys;
-    private boolean isHoldingStone;
-    private Stone heldStone;
+    private boolean isHoldingCrate;
+    private Crate heldCrate;
     private int timePower;
     private boolean holdUp;
     private boolean holdLeft;
     private boolean holdRight;
     private String direction;
     private Terrain[][] terrain;
-    private MyArrayList<Stone> stones;
+    private MyArrayList<Crate> crates;
     private boolean onGround;
     private boolean isDead;
     private boolean isReverse;
     private boolean isReversing;
     private MyQueue<Player> objectQueue;
-
+    private int frame;
+    static double SIDE_WIDTH_RATIO = 50.0 / 85.0;
+    static double FACE_WIDTH_RATIO = 1;
+    static double SLIDE_HEIGHT_RATIO = 0.5;
+    static double BOX_DIMENSION_RATIO = 1;
     static final double GRAVITY_RATIO = 0.03;
     static final double X_MAX_VEL_RATIO = 0.15;
     static final double Y_MAX_VEL_RATIO = 0.38;
@@ -32,15 +36,16 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
     Player() {
         hitbox = new Rectangle (0, 0, (int)(MainFrame.gridScreenRatio * 0.75), MainFrame.gridScreenRatio);
-        vel = new Vector(0, 0);
-        acc = new Vector(0, gravityAcc);
+        vel = new MyVector(0, 0);
+        acc = new MyVector(0, gravityAcc);
         keys = new MyArrayList<Key>();
-        isHoldingStone = false;
-        heldStone = null;
+        isHoldingCrate = false;
+        heldCrate = null;
         timePower = 0;
         onGround = false;
         direction = "left";
         objectQueue = new MyQueue<Player>();
+        frame = 0;
     }
 
     /**
@@ -54,15 +59,15 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         gravityAcc = player.getGravityAcc();
         runAcc = player.getRunAcc();
         airMoveAcc = player.getAirMoveAcc();
-        vel = new Vector(player.getVel());
-        acc = new Vector(player.getAcc());
-        isHoldingStone = false;
-        heldStone = null;
+        vel = new MyVector(player.getVel());
+        acc = new MyVector(player.getAcc());
+        isHoldingCrate = false;
+        heldCrate = null;
         timePower = player.getTimePower();
         onGround = false;
         direction = player.getDirection();
         terrain = player.getTerrain();
-        stones = player.getStones();
+        crates = player.getCrates();
         isReverse = true;
         isReversing = true;
         objectQueue = new MyQueue<Player>(player.getObjectQueue());
@@ -70,6 +75,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         for (int i = 0; i < player.getKeys().size(); i++) {
             keys.add(new Key(player.getKeys().get(i)));
         }
+        frame = player.getFrame();
     }
 
     /**
@@ -85,17 +91,18 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         airMoveAcc = player.getAirMoveAcc();
         vel = player.getVel();
         acc = player.getAcc();
-        isHoldingStone = player.isHoldingStone();
-        heldStone = player.getHeldStone();
+        isHoldingCrate = player.isHoldingCrate();
+        heldCrate = player.getHeldCrate();
         timePower = player.getTimePower();
         onGround = false;
         direction = player.getDirection();
         terrain = player.getTerrain();
-        stones = player.getStones();
+        crates = player.getCrates();
         isReverse = player.isReverse();
         isReversing = player.isReversing();
         objectQueue = player.getObjectQueue();
         keys = player.getKeys();
+        frame = player.getFrame();
 
     }
 
@@ -108,29 +115,29 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     }
 
     @Override
-    public void setVel(Vector vel) {
+    public void setVel(MyVector vel) {
         this.vel = vel;
     }
 
     @Override
-    public Vector getVel() {
+    public MyVector getVel() {
         return vel;
     }
 
-    public Vector getAcc() {
+    public MyVector getAcc() {
         return acc;
     }
 
-    public void setAcc(Vector acc) {
+    public void setAcc(MyVector acc) {
         this.acc = acc;
     }
 
-    public void setHoldingStone(boolean holdingStone) {
-        isHoldingStone = holdingStone;
+    public void setHoldingCrate(boolean holdingCrate) {
+        isHoldingCrate = holdingCrate;
     }
 
-    public boolean isHoldingStone() {
-        return isHoldingStone;
+    public boolean isHoldingCrate() {
+        return isHoldingCrate;
     }
 
     public void setTimePower(int timePower) {
@@ -177,12 +184,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         this.terrain = terrain;
     }
 
-    public void setStones(MyArrayList<Stone> stones) {
-        this.stones = stones;
+    public void setCrates(MyArrayList<Crate> crates) {
+        this.crates = crates;
     }
 
-    public Stone getHeldStone() {
-        return heldStone;
+    public Crate getHeldCrate() {
+        return heldCrate;
     }
 
     public boolean isOnGround() {
@@ -226,8 +233,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         return terrain;
     }
 
-    public MyArrayList<Stone> getStones() {
-        return stones;
+    public MyArrayList<Crate> getCrates() {
+        return crates;
     }
 
     public double getxMaxVel() {
@@ -266,6 +273,14 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         return keys;
     }
 
+    public void setFrame(int frame) {
+        this.frame = frame;
+    }
+
+    public int getFrame() {
+        return frame;
+    }
+
     void startLevel() {
         xMaxVel = MainFrame.gridScreenRatio * X_MAX_VEL_RATIO;
         yMaxVel = MainFrame.gridScreenRatio * Y_MAX_VEL_RATIO;
@@ -300,7 +315,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 } else {
                     acc.setX(0);
                 }
-            } else if (((vel.getX()) < 0 && (acc.getX() < 0)) || ((vel.getX()) > 0 && (acc.getX() > 0))) {
+            } else if (((vel.getX() < 0) && (acc.getX() < 0)) || ((vel.getX() > 0) && (acc.getX() > 0))) {
                 vel.setX(0);
                 acc.setX(0);
             } else if (onGround && getVel().getX() != 0) {
@@ -310,14 +325,33 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                     getAcc().setX(runAcc);
                 }
             }
-
+            int x = 0;
+            int y = 0;
+            int w = 0;
+            int h = 0;
+            if (isHoldLeft() || isHoldRight()) {
+                h = MainFrame.gridScreenRatio;
+                y = (int) getHitbox().getY();
+                w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
+            } else {
+                w = MainFrame.gridScreenRatio;
+                h = MainFrame.gridScreenRatio;
+                y = (int)getHitbox().getY();
+                if (isHoldingCrate()) {
+                    w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                }
+                x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
+            }
+            getHitbox().setLocation(x, y);
+            getHitbox().setSize(w, h);
+            frame++;
             if (vel.getY() > yMaxVel) {
                 acc.setY(0);
             } else {
                 acc.setY(gravityAcc);
             }
-            //System.out.println(hitbox.x + " " + hitbox.y);
-            //System.out.println(vel.getMagnitude());
+
             vel.setX(vel.getX() + acc.getX());
             vel.setY(vel.getY() + acc.getY());
             tryMove((int) vel.getX(), (int) vel.getY());
@@ -326,27 +360,27 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 getObjectQueue().add(new Player(this));
             }
         } else {
-            heldStone.setPickedUp(false);
-            heldStone = null;
+            heldCrate.setPickedUp(false);
+            heldCrate = null;
         }
     }
     
     void interact() {
         if (direction.equals("left")) {
-            if (!isHoldingStone()) {
+            if (!isHoldingCrate()) {
                 Point p = new Point((int)(getHitbox().getX() - MainFrame.gridScreenRatio * 0.2), (int)(getHitbox().getY() + getHitbox().getHeight() / 2));
                 unlockDoor(p);
-                pickUpStone(p);
+                pickUpCrate(p);
             } else {
-                placeDownStone();
+                placeDownCrate();
             }
         } else {
-            if (!isHoldingStone()) {
+            if (!isHoldingCrate()) {
                 Point p = new Point((int)(getHitbox().getX() + getHitbox().getWidth() + MainFrame.gridScreenRatio * 0.2), (int)getHitbox().getY());
                 unlockDoor(p);
-                pickUpStone(p);
+                pickUpCrate(p);
             } else {
-                placeDownStone();
+                placeDownCrate();
             }
         }
     }
@@ -362,35 +396,34 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                             door.setUnlocked(true);
                         }
                     }
-
                 }
             }
         }
     }
 
-    private void pickUpStone (Point p) {
-        boolean foundStone = false;
-        for (int i = 0; i < stones.size() && !foundStone; i++) {
-            if (stones.get(i).getHitbox().contains(p)) {
-                foundStone = true;
-                isHoldingStone = true;
-                stones.get(i).setPickedUp(true);
-                heldStone = stones.get(i);
-                stones.get(i).setPlayer(this);
+    private void pickUpCrate (Point p) {
+        boolean foundCrate = false;
+        for (int i = 0; i < crates.size() && !foundCrate; i++) {
+            if (crates.get(i).getHitbox().contains(p)) {
+                foundCrate = true;
+                isHoldingCrate = true;
+                crates.get(i).setPickedUp(true);
+                heldCrate = crates.get(i);
+                crates.get(i).setPlayer(this);
             }
         }
     }
 
-    public void placeDownStone () {
-        heldStone.setPickedUp(false);
-        isHoldingStone = false;
-        heldStone.getVel().setX(vel.getX());
+    public void placeDownCrate () {
+        heldCrate.setPickedUp(false);
+        isHoldingCrate = false;
+        heldCrate.getVel().setX(vel.getX());
         if (getVel().getY() < 0) {
-            heldStone.getVel().setY(-MainFrame.gridScreenRatio * 0.3);
+            heldCrate.getVel().setY(-MainFrame.gridScreenRatio * 0.3);
         } else {
-            heldStone.getVel().setY(0);
+            heldCrate.getVel().setY(0);
         }
-        heldStone = null;
+        heldCrate = null;
     }
     
     private void jump() {
@@ -401,13 +434,13 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
     private void tryMove (int xMove, int yMove) {
         getHitbox().translate(xMove, 0);
-        if (isHoldingStone()) {
-            heldStone.getHitbox().translate(xMove, 0);
+        if (isHoldingCrate()) {
+            heldCrate.getHitbox().translate(xMove, 0);
         }
         checkWallCollisions(true);
         getHitbox().translate(0, yMove);
-        if (isHoldingStone()) {
-            heldStone.getHitbox().translate(0, yMove);
+        if (isHoldingCrate()) {
+            heldCrate.getHitbox().translate(0, yMove);
         }
         if (checkWallCollisions(false)) {
             onGround = false;
@@ -435,8 +468,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         for (int i = 0; i < terrain.length && okMove; i++) {
             for (int j = 0; j < terrain[0].length && okMove; j++) {
                 if ((terrain[i][j] instanceof Wall && !(terrain[i][j] instanceof Door)) || (terrain[i][j] instanceof Door && !((Door)terrain[i][j]).isUnlocked())) {
-                    if(isHoldingStone()) {
-                        okMove = !((Wall)(terrain[i][j])).collide(heldStone.getHitbox()) && !((Wall)(terrain[i][j])).collide(getHitbox());
+                    if(isHoldingCrate()) {
+                        okMove = !((Wall)(terrain[i][j])).collide(heldCrate.getHitbox()) && !((Wall)(terrain[i][j])).collide(getHitbox());
                     } else {
                         okMove = !((Wall)(terrain[i][j])).collide(getHitbox());
                     }
@@ -446,15 +479,15 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 }
             }
         }
-        for (int i = 0; i < stones.size() && okMove; i++) {
-            if (stones.get(i) != heldStone) {
-                if(isHoldingStone()) {
-                    okMove = !stones.get(i).collide(heldStone.getHitbox()) && !stones.get(i).collide(getHitbox());
+        for (int i = 0; i < crates.size() && okMove; i++) {
+            if (crates.get(i) != heldCrate) {
+                if(isHoldingCrate()) {
+                    okMove = !crates.get(i).collide(heldCrate.getHitbox()) && !crates.get(i).collide(getHitbox());
                 } else {
-                    okMove = !stones.get(i).collide(getHitbox());
+                    okMove = !crates.get(i).collide(getHitbox());
                 }
                 if (!okMove) {
-                    wallCollide(stones.get(i).getHitbox(),tryX);
+                    wallCollide(crates.get(i).getHitbox(),tryX);
                 }
             }
         }
@@ -467,8 +500,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             if (getDirection().equals("right")) {
                 if (wBox.getX() > getHitbox().getX()) {
                     xPos = (int) (wBox.getX() - getHitbox().getWidth());
-                    if (isHoldingStone()) {
-                        xPos -= heldStone.getHitbox().getWidth();
+                    if (isHoldingCrate()) {
+                        xPos -= heldCrate.getHitbox().getWidth();
                     }
                 } else {
                     xPos = (int) (wBox.getX() + wBox.getWidth());
@@ -476,15 +509,15 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             } else {
                 if (wBox.getX() < getHitbox().getX()) {
                     xPos = (int) (wBox.getX() + wBox.getWidth());
-                    if (isHoldingStone()) {
-                        xPos += heldStone.getHitbox().getWidth();
+                    if (isHoldingCrate()) {
+                        xPos += heldCrate.getHitbox().getWidth();
                     }
                 } else {
                     xPos = (int) (wBox.getX() - getHitbox().getWidth());
                 }
             }
-            if (isHoldingStone()) {
-                heldStone.getHitbox().translate((int) (xPos - getHitbox().getX()), 0);
+            if (isHoldingCrate()) {
+                heldCrate.getHitbox().translate((int) (xPos - getHitbox().getX()), 0);
             }
             getVel().setX(0);
             getHitbox().setLocation(xPos, (int) getHitbox().getY());
@@ -500,8 +533,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 //getVel().setY(-getVel().getY() * 0.2);
                 getVel().setY(0);
             }
-            if (isHoldingStone()) {
-                heldStone.getHitbox().translate(0, (int) (yPos - getHitbox().getY()));
+            if (isHoldingCrate()) {
+                heldCrate.getHitbox().translate(0, (int) (yPos - getHitbox().getY()));
             }
             getHitbox().setLocation((int) getHitbox().getX(), yPos);
         }

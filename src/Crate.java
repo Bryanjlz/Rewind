@@ -1,68 +1,68 @@
 import java.awt.*;
 
-public class Stone extends Terrain implements Movable, Updatable, Reversable<Stone> {
-    private Vector vel;
+public class Crate extends Terrain implements Movable, Updatable, Reversable<Crate> {
+    private MyVector vel;
     private  double yMaxVel;
     private  double gravityAcc;
     private double frictionAcc;
-    private Vector acc;
+    private MyVector acc;
     private boolean onGround;
     private boolean pickedUp;
     private Player player;
     private Terrain[][] terrain;
-    private MyArrayList<Stone> stones;
+    private MyArrayList<Crate> crates;
     private boolean reverse;
-    private MyQueue<Stone> objectQueue;
+    private MyQueue<Crate> objectQueue;
     private static double FRICTION_ACC_RATIO = 0.017;
 
-    public Stone(int x, int y, Terrain[][] terrain, MyArrayList<Stone> stones, Player player) {
+    public Crate(int x, int y, Terrain[][] terrain, MyArrayList<Crate> crates, Player player) {
         super(x, y);
-        vel = new Vector(0, 0);
-        acc = new Vector(0, 0);
+        vel = new MyVector(0, 0);
+        acc = new MyVector(0, 0);
         gravityAcc = MainFrame.gridScreenRatio * Player.GRAVITY_RATIO;
         yMaxVel = MainFrame.gridScreenRatio * Player.Y_MAX_VEL_RATIO;
         frictionAcc = MainFrame.gridScreenRatio * FRICTION_ACC_RATIO;
         onGround = false;
         pickedUp = false;
         reverse = false;
-        objectQueue = new MyQueue<Stone>();
+        objectQueue = new MyQueue<Crate>();
         this.terrain = terrain;
-        this.stones = stones;
+        this.crates = crates;
         this.player = player;
     }
 
-    Stone (Stone stone) {
-        super((int)stone.getHitbox().getX(), (int)stone.getHitbox().getY());
-        vel = new Vector (stone.getVel());
-        acc = new Vector (stone.getAcc());
+    Crate (Crate crate) {
+        super((int)crate.getHitbox().getX(), (int)crate.getHitbox().getY());
+        vel = new MyVector (crate.getVel());
+        acc = new MyVector (crate.getAcc());
         gravityAcc = MainFrame.gridScreenRatio * Player.GRAVITY_RATIO;
         yMaxVel = MainFrame.gridScreenRatio * Player.Y_MAX_VEL_RATIO;
         frictionAcc = MainFrame.gridScreenRatio * Player.RUN_ACC_RATIO;
-        terrain = stone.getTerrain();
-        stones = stone.getStones();
-        player = stone.getPlayer();
-        onGround = stone.isOnGround();
+        terrain = crate.getTerrain();
+        crates = crate.getCrates();
+        player = crate.getPlayer();
+        onGround = crate.isOnGround();
         reverse = true;
         pickedUp = false;
         onGround = false;
-        objectQueue = new MyQueue<Stone>(stone.getObjectQueue());
+        objectQueue = new MyQueue<Crate>(crate.getObjectQueue());
     }
 
     @Override
-    public Vector getVel() {
+    public MyVector getVel() {
         return vel;
     }
 
     @Override
-    public void setVel(Vector vel) {
+    public void setVel(MyVector vel) {
         this.vel = vel;
     }
 
-    public Vector getAcc() {
+    public MyVector getAcc() {
         return acc;
     }
 
-    public void setAcc(Vector acc) {
+    public void setAcc(MyVector acc) {
         this.acc = acc;
     }
 
@@ -93,7 +93,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
     }
 
     @Override
-    public MyQueue<Stone> getObjectQueue() {
+    public MyQueue<Crate> getObjectQueue() {
         return objectQueue;
     }
 
@@ -105,8 +105,8 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         return terrain;
     }
 
-    public MyArrayList<Stone> getStones() {
-        return stones;
+    public MyArrayList<Crate> getCrates() {
+        return crates;
     }
 
     public Player getPlayer() {
@@ -120,7 +120,7 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
     @Override
     public void update() {
         if (!isReverse() && (getObjectQueue().isEmpty() || !equals(getObjectQueue().getLast()))) {
-            objectQueue.add(new Stone(this));
+            objectQueue.add(new Crate(this));
         }
         if (isPickedUp()) {
             Rectangle pBox = player.getHitbox();
@@ -201,9 +201,9 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
                 }
             }
         }
-        for (int i = 0; i < stones.size() && okMove; i++) {
-            if (stones.get(i) != this) {
-                okMove = !stones.get(i).collide(getHitbox());
+        for (int i = 0; i < crates.size() && okMove; i++) {
+            if (crates.get(i) != this) {
+                okMove = !crates.get(i).collide(getHitbox());
             }
         }
         if (!isPickedUp() && getHitbox().intersects(player.getHitbox())) {
@@ -219,14 +219,14 @@ public class Stone extends Terrain implements Movable, Updatable, Reversable<Sto
         return false;
     }
 
-    private boolean equals (Stone stone) {
-        if (!stone.getHitbox().equals(getHitbox())) {
+    private boolean equals (Crate crate) {
+        if (!crate.getHitbox().equals(getHitbox())) {
             return false;
         }
-        if (!stone.getVel().equals(getVel())) {
+        if (!crate.getVel().equals(getVel())) {
             return false;
         }
-        if (!stone.getAcc().equals(getAcc())) {
+        if (!crate.getAcc().equals(getAcc())) {
             return false;
         }
         return true;

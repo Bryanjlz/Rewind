@@ -1,19 +1,19 @@
 import java.awt.*;
 
 public class MovingWall extends Terrain implements Movable {
-    private Vector vel;
+    private MyVector vel;
     public MovingWall () {
         super();
-        vel = new Vector(0 ,0);
+        vel = new MyVector(0 ,0);
     }
 
     @Override
-    public Vector getVel() {
+    public MyVector getVel() {
         return vel;
     }
 
     @Override
-    public void setVel(Vector vel) {
+    public void setVel(MyVector vel) {
         this.vel = vel;
     }
 

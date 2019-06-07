@@ -1,13 +1,13 @@
-public class Vector {
+public class MyVector {
     private double x;
     private double y;
 
-    Vector(double x, double y) {
+    MyVector(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    Vector (Vector vector) {
+    MyVector (MyVector vector) {
         x = vector.getX();
         y = vector.getY();
     }
@@ -28,7 +28,7 @@ public class Vector {
         this.y = y;
     }
 
-    public boolean equals (Vector vector) {
+    public boolean equals (MyVector vector) {
         if (x == vector.getX() && y == vector.getY()) {
             return true;
         }

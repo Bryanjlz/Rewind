@@ -53,24 +53,24 @@ public class MainFrame extends JFrame {
                     }
                     break;
                 case KeyEvent.VK_A:
-                    if (!player.isHoldRight() && !player.isReversing()) {
+                    if (!player.isReversing()) {
                         player.setHoldLeft(true);
-                        if (player.isHoldingStone() && player.getDirection().equals("right")) {
-                            Rectangle stoneBox = new Rectangle(player.getHeldStone().getHitbox());
-                            int xMove = (int)-(stoneBox.getWidth() + player.getHitbox().getWidth());
-                            stoneBox.translate(xMove, 0);
+                        if (player.isHoldingCrate() && player.getDirection().equals("right")) {
+                            Rectangle crateBox = new Rectangle(player.getHeldCrate().getHitbox());
+                            int xMove = (int)-(crateBox.getWidth() + player.getHitbox().getWidth());
+                            crateBox.translate(xMove, 0);
                             Terrain[][] terrain = game.getCurrentLevel().getTerrain();
                             boolean wallClip = false;
                             for (int i = 0; i < terrain.length && !wallClip; i++) {
                                 for (int j = 0; j < terrain[0].length && !wallClip; j++) {
-                                    if (terrain[i][j] != null && stoneBox.intersects(terrain[i][j].getHitbox())) {
+                                    if (terrain[i][j] != null && crateBox.intersects(terrain[i][j].getHitbox())) {
                                         wallClip = true;
                                     }
                                 }
                             }
-                            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
-                            for (int i = 0; i < stones.size() && !wallClip; i++) {
-                                if (stones.get(i) != player.getHeldStone() && stoneBox.intersects(stones.get(i).getHitbox())) {
+                            MyArrayList<Crate> crates = game.getCurrentLevel().getCrates();
+                            for (int i = 0; i < crates.size() && !wallClip; i++) {
+                                if (crates.get(i) != player.getHeldCrate() && crateBox.intersects(crates.get(i).getHitbox())) {
                                     wallClip = true;
                                 }
                             }
@@ -83,25 +83,25 @@ public class MainFrame extends JFrame {
                     }
                     break;
                 case KeyEvent.VK_D:
-                    if (!player.isHoldLeft() && !player.isReversing()) {
+                    if (!player.isReversing()) {
                         player.setHoldRight(true);
-                        if (player.isHoldingStone() && player.getDirection().equals("left")) {
-                            Rectangle stoneBox = new Rectangle(player.getHeldStone().getHitbox());
-                            int xMove = (int)(player.getHitbox().getWidth() + stoneBox.getWidth());
-                            stoneBox.translate(xMove, 0);
+                        if (player.isHoldingCrate() && player.getDirection().equals("left")) {
+                            Rectangle crateBox = new Rectangle(player.getHeldCrate().getHitbox());
+                            int xMove = (int)(player.getHitbox().getWidth() + crateBox.getWidth());
+                            crateBox.translate(xMove, 0);
                             Terrain[][] terrain = game.getCurrentLevel().getTerrain();
                             boolean wallClip = false;
                             for (int i = 0; i < terrain.length && !wallClip; i++) {
                                 for (int j = 0; j < terrain[0].length && !wallClip; j++) {
-                                    if (terrain[i][j] != null && stoneBox.intersects(terrain[i][j].getHitbox())) {
+                                    if (terrain[i][j] != null && crateBox.intersects(terrain[i][j].getHitbox())) {
                                         player.setDirection("right");
                                         wallClip = true;
                                     }
                                 }
                             }
-                            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
-                            for (int i = 0; i < stones.size() && !wallClip; i++) {
-                                if (stones.get(i).getHitbox() != stoneBox && stoneBox.intersects(stones.get(i).getHitbox())) {
+                            MyArrayList<Crate> crates = game.getCurrentLevel().getCrates();
+                            for (int i = 0; i < crates.size() && !wallClip; i++) {
+                                if (crates.get(i).getHitbox() != crateBox && crateBox.intersects(crates.get(i).getHitbox())) {
                                     player.setDirection("right");
                                     wallClip = true;
                                 }
@@ -168,13 +168,13 @@ public class MainFrame extends JFrame {
         public void mousePressed(MouseEvent e) {
             Point mousePos = MouseInfo.getPointerInfo().getLocation();
             if (!game.isMenu()) {
-                MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+                MyArrayList<Crate> crates = game.getCurrentLevel().getCrates();
                 boolean foundReverse = false;
-                for (int i = 0; i < stones.size() && !foundReverse; i++) {
-                    if (stones.get(i).getHitbox().contains(mousePos)) {
+                for (int i = 0; i < crates.size() && !foundReverse; i++) {
+                    if (crates.get(i).getHitbox().contains(mousePos)) {
                         foundReverse = true;
                         player.setReversing(true);
-                        stones.get(i).setReverse(true);
+                        crates.get(i).setReverse(true);
                     }
 
                 }
@@ -195,22 +195,22 @@ public class MainFrame extends JFrame {
                 }
             }
             player.setReversing(false);
-            MyArrayList<Stone> stones = game.getCurrentLevel().getStones();
+            MyArrayList<Crate> crates = game.getCurrentLevel().getCrates();
             boolean foundReverse = false;
             Terrain[][] terrain = game.getCurrentLevel().getTerrain();
-            for (int i = 0; i < stones.size() && !foundReverse; i++) {
-                Stone stone = stones.get(i);
-                if (stone.isReverse()) {
+            for (int i = 0; i < crates.size() && !foundReverse; i++) {
+                Crate crate = crates.get(i);
+                if (crate.isReverse()) {
                     foundReverse = true;
-                    stone.setReverse(false);
+                    crate.setReverse(false);
                     boolean foundCollide = false;
-                    if (stone.getHitbox().intersects(player.getHitbox())) {
+                    if (crate.getHitbox().intersects(player.getHitbox())) {
                         foundCollide = true;
                         panel.setTransition(true);
                         game.setRestartLevel(true);
                     }
-                    for (int j = 0; j < stones.size() && !foundCollide; j++) {
-                        if (stone != stones.get(j) && stone.getHitbox().intersects(stones.get(j).getHitbox())) {
+                    for (int j = 0; j < crates.size() && !foundCollide; j++) {
+                        if (crate != crates.get(j) && crate.getHitbox().intersects(crates.get(j).getHitbox())) {
                             foundCollide = true;
                             panel.setTransition(true);
                             game.setRestartLevel(true);
@@ -218,7 +218,7 @@ public class MainFrame extends JFrame {
                     }
                     for (int j = 0; j < terrain.length && !foundCollide; j++) {
                         for (int k = 0; k < terrain[0].length && !foundCollide; k++) {
-                            if (terrain[j][k] instanceof Wall && stone.getHitbox().intersects(terrain[j][k].getHitbox())) {
+                            if (terrain[j][k] instanceof Wall && crate.getHitbox().intersects(terrain[j][k].getHitbox())) {
                                 foundCollide = true;
                                 panel.setTransition(true);
                                 game.setRestartLevel(true);
@@ -231,8 +231,8 @@ public class MainFrame extends JFrame {
             if (!foundReverse && player.isReverse()) {
                 player.setReverse(false);
                 boolean foundCollide = false;
-                for (int j = 0; j < stones.size() && !foundCollide; j++) {
-                    if (player.getHitbox().intersects(stones.get(j).getHitbox())) {
+                for (int j = 0; j < crates.size() && !foundCollide; j++) {
+                    if (player.getHitbox().intersects(crates.get(j).getHitbox())) {
                         foundCollide = true;
                         panel.setTransition(true);
                         game.setRestartLevel(true);

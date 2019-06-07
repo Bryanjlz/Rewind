@@ -11,7 +11,7 @@ public class GameThread implements Runnable {
     MyArrayList<Pew> pews;
 
     public GameThread (Player player) {
-        level = 3;
+        level = 1;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
@@ -68,8 +68,8 @@ public class GameThread implements Runnable {
             if (!menu) {
                 if (!player.isReversing()) {
                     player.update();
-                    for (int i = 0; i < currentLevel.getStones().size(); i++) {
-                        currentLevel.getStones().get(i).update();
+                    for (int i = 0; i < currentLevel.getCrates().size(); i++) {
+                        currentLevel.getCrates().get(i).update();
                     }
                     if (currentLevel.isLevelFinished()) {
                         //pews.add(new Pew(new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256)), new Font("Arial", (int) (Math.random() * 3), (int) (Math.random() * 50) + 5), (int) (Math.random() * MainFrame.WIDTH), (int) (Math.random() * MainFrame.HEIGHT)));
@@ -83,25 +83,25 @@ public class GameThread implements Runnable {
                     }
                 } else {
                     boolean foundReverse = false;
-                    MyArrayList<Stone> stones = currentLevel.getStones();
-                    for (int i = 0; i < stones.size() && !foundReverse; i++) {
-                        if (stones.get(i).isReverse() && !stones.get(i).getObjectQueue().isEmpty()) {
-                            if (stones.get(i).isPickedUp()) {
-                                stones.get(i).setPickedUp(false);
-                                player.placeDownStone();
+                    MyArrayList<Crate> crates = currentLevel.getCrates();
+                    for (int i = 0; i < crates.size() && !foundReverse; i++) {
+                        if (crates.get(i).isReverse() && !crates.get(i).getObjectQueue().isEmpty()) {
+                            if (crates.get(i).isPickedUp()) {
+                                crates.get(i).setPickedUp(false);
+                                player.placeDownCrate();
                             }
-                            stones.set(i, stones.get(i).getObjectQueue().pollLast());
+                            crates.set(i, crates.get(i).getObjectQueue().pollLast());
                             foundReverse = true;
-                        } else if (stones.get(i).isReverse()) {
-                            stones.get(i).setReverse(false);
+                        } else if (crates.get(i).isReverse()) {
+                            crates.get(i).setReverse(false);
                             player.setReversing(false);
                         }
                     }
 
                     if (player.isReverse() && !foundReverse) {
                         if (!player.getObjectQueue().isEmpty()) {
-                            if (player.getHeldStone() != null) {
-                                player.placeDownStone();
+                            if (player.getHeldCrate() != null) {
+                                player.placeDownCrate();
                             }
                             player.clone(player.getObjectQueue().pollLast());
                             foundReverse = true;

@@ -12,8 +12,8 @@ public class GamePanel extends JPanel {
     private boolean transition;
     private int transAlpha;
     private boolean passedBlack;
-    static final int NOT_HOLD_BOX = 0;
-    static final int HOLD_BOX = 1;
+    static final int NOT_HOLD_CRATE = 0;
+    static final int HOLD_CRATE = 1;
     static final int RIGHT = 0;
     static final int LEFT = 1;
     static final int FACE_FORWARD = 2;
@@ -25,6 +25,7 @@ public class GamePanel extends JPanel {
     private BufferedImage[][] jump;
     private BufferedImage wall;
     private BufferedImage key;
+    private BufferedImage crate;
     private BufferedImage[] door;
 
     public GamePanel (GameThread game) {
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel {
         slide = new BufferedImage[2][2];
         jump = new BufferedImage[2][2];
         door = new BufferedImage[2];
+        loadImages();
     }
     public void setThread(Thread thread) {
         this.thread = thread;
@@ -53,8 +55,9 @@ public class GamePanel extends JPanel {
         for (int i = 0; i < run.length; i++) {
             for (int j = 0; j < run[0].length; j++) {
                 for (int k = 0; k < run[0][0].length; k++) {
-                    int playerNum = i * run[0].length * run[0][0].length + j * run[0][0].length + k;
+                    int playerNum = i * run[0].length * run[0][0].length + j * run[0][0].length + k + 1;
                     File file = new File("assets/images/player/run/player" + playerNum + ".png");
+                    //System.out.println("assets/images/player/run/player" + playerNum + ".png");
                     try {
                         run[i][j][k] = ImageIO.read(file);
                     } catch (Exception e) {
@@ -67,7 +70,7 @@ public class GamePanel extends JPanel {
         // Load player stand images
         for (int i = 0; i < stand.length; i++) {
             for (int j = 0; j < stand[0].length; j++) {
-                int playerNum = i * stand[0].length + j;
+                int playerNum = i * stand[0].length + j + 1;
                 File file = new File("assets/images/player/stand/player" + playerNum + ".png");
                 try {
                     stand[i][j] = ImageIO.read(file);
@@ -80,7 +83,7 @@ public class GamePanel extends JPanel {
         // Load player slide images
         for (int i = 0; i < slide.length; i++) {
             for (int j = 0; j < slide[0].length; j++) {
-                int playerNum = i * slide[0].length + j;
+                int playerNum = i * slide[0].length + j + 1;
                 File file = new File ("assets/images/player/slide/player" + playerNum + ".png");
                 try {
                     slide[i][j] = ImageIO.read(file);
@@ -93,7 +96,7 @@ public class GamePanel extends JPanel {
         // Load player jump images
         for (int i = 0; i < jump.length; i++) {
             for (int j = 0; j < jump[0].length; j++) {
-                int playerNum = i * jump[0].length + j;
+                int playerNum = i * jump[0].length + j + 1;
                 File file = new File ("assets/images/player/jump/player" + playerNum + ".png");
                 try {
                     jump[i][j] = ImageIO.read(file);
@@ -107,6 +110,7 @@ public class GamePanel extends JPanel {
         try {
             key = ImageIO.read(new File("assets/images/terrain/key.png"));
             wall = ImageIO.read(new File("assets/images/terrain/wall.png"));
+            crate = ImageIO.read(new File("assets/images/terrain/crate.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -126,12 +130,16 @@ public class GamePanel extends JPanel {
         if (game.isMenu()) {
             drawMenu(g);
         } else {
-            g.setColor(Color.CYAN);
-            g.fillRect((int) player.getHitbox().getX(), (int) player.getHitbox().getY(), (int) player.getHitbox().getWidth(), (int) player.getHitbox().getHeight());
+            g.setColor(Color.lightGray);
+            g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+            drawPlayer(g);
+            //g.setColor(Color.CYAN);
+            //g.fillRect((int) player.getHitbox().getX(), (int) player.getHitbox().getY(), (int) player.getHitbox().getWidth(), (int) player.getHitbox().getHeight());
             if (player.isReverse()) {
                 g.setColor(Color.BLACK);
                 g.drawString("Rewiinndd", (int) (player.getHitbox().getX() + player.getHitbox().getWidth() / 4), (int) (player.getHitbox().getY() + player.getHitbox().getHeight() / 2));
             }
+
             drawTerrain(g);
             g.setColor(Color.black);
             g.drawString(Integer.toString(game.getFps()), 100, 100);
@@ -182,6 +190,74 @@ public class GamePanel extends JPanel {
         this.repaint();
     }
 
+    private void drawPlayer (Graphics g) {
+        int x = 0;
+        int y = 0;
+        int w = 0;
+        int h = 0;
+        Image img = null;
+        int direction = RIGHT;
+        if (player.getDirection() == "left") {
+            direction = LEFT;
+        }
+        int holdCrate = NOT_HOLD_CRATE;
+        if (player.isHoldingCrate()) {
+            holdCrate = HOLD_CRATE;
+        }
+        if (!player.isOnGround()) {
+            w = MainFrame.gridScreenRatio;
+            h = MainFrame.gridScreenRatio;
+            y = (int)player.getHitbox().getY();
+            if (player.isHoldingCrate()) {
+                w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+            }
+            x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            img = jump[holdCrate][direction];
+
+        } else if (player.isHoldLeft() || player.isHoldRight()) {
+            h = MainFrame.gridScreenRatio;
+            y = (int) player.getHitbox().getY();
+            w = (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+            if (player.isHoldingCrate()) {
+                w += MainFrame.gridScreenRatio;
+            }
+            x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            if (player.getFrame() >= run[0][0].length) {
+                player.setFrame(0);
+            }
+            img = run[holdCrate][direction][player.getFrame()];
+        } else if (player.getVel().getX() == 0) {
+            w = MainFrame.gridScreenRatio;
+            h = MainFrame.gridScreenRatio;
+            y = (int)player.getHitbox().getY();
+            if (!player.isHoldingCrate()) {
+                direction = FACE_FORWARD;
+                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            } else {
+                w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            }
+            if (player.getFrame() >= stand[0].length) {
+                player.setFrame(0);
+            }
+            img = stand[direction][player.getFrame()];
+        } else {
+            w = MainFrame.gridScreenRatio;
+            h = MainFrame.gridScreenRatio;
+            y = (int)player.getHitbox().getY();
+            if (!player.isHoldingCrate()) {
+                h /= 2;
+                y += h;
+                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            } else {
+                w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            }
+            img = slide[holdCrate][direction];
+        }
+        g.drawImage(img, x, y, w, h, null);
+    }
+
     private void drawMenu (Graphics g) {
         g.setColor(Color.white);
         g.drawRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
@@ -206,21 +282,20 @@ public class GamePanel extends JPanel {
                     g.setColor(Color.BLACK);
                 } else if (terrain[i][j] instanceof Door) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
-                    g.setColor(Color.ORANGE);
-                    g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+                    g.drawImage(door[0], (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
                 } else if (terrain[i][j] instanceof Wall) {
-                    g.setColor(Color.BLACK);
                     Rectangle hitbox = terrain[i][j].getHitbox();
-                    //System.out.println(hitBox.getX() + " " + hitBox.getY());
-                    g.drawRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+                    g.drawImage(wall, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
                 }
             }
         }
         g.setColor(Color.LIGHT_GRAY);
-        for (int i = 0; i < currentLevel.getStones().size(); i++) {
-            Rectangle hitbox = currentLevel.getStones().get(i).getHitbox();
-            g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
-            if (currentLevel.getStones().get(i).isReverse()) {
+        for (int i = 0; i < currentLevel.getCrates().size(); i++) {
+            Rectangle hitbox = currentLevel.getCrates().get(i).getHitbox();
+            if (currentLevel.getCrates().get(i) != player.getHeldCrate()) {
+                g.drawImage(crate, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
+            }
+            if (currentLevel.getCrates().get(i).isReverse()) {
                 g.setColor(Color.BLACK);
                 g.drawString ("Rewiinndd",(int)(hitbox.getX()+ hitbox.getWidth() / 4), (int)(hitbox.getY() + hitbox.getHeight() / 2));
             }

@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class Level {
     private Terrain[][] terrain;
-    private MyArrayList<Stone> stones;
+    private MyArrayList<Crate> crates;
     private MyArrayList<MovingWall> movingWalls;
     private MyArrayList<Key> keys;
     private boolean levelFinished;
@@ -14,7 +14,7 @@ public class Level {
 
     public Level (Player player) {
         terrain = new Terrain[18][32];
-        stones = new MyArrayList<Stone>();
+        crates = new MyArrayList<Crate>();
         movingWalls = new MyArrayList<MovingWall>();
         keys = new MyArrayList<Key>();
         this.levelFinished = false;
@@ -29,11 +29,11 @@ public class Level {
         }
         loadFile("levels/level" + level + ".txt");
         this.player = player;
-        player.setVel(new Vector(0,0));
-        player.setAcc(new Vector(0, 0));
+        player.setVel(new MyVector(0,0));
+        player.setAcc(new MyVector(0, 0));
         player.setKeys(keys);
         player.setTerrain(terrain);
-        player.setStones(stones);
+        player.setCrates(crates);
         player.getHitbox().setLocation(playerLoc);
         player.setObjectQueue(new MyQueue<Player>());
         player.setDead(false);
@@ -47,9 +47,9 @@ public class Level {
             int terrainWidth = fileReader.nextInt();
             int terrainHeight = fileReader.nextInt();
             terrain = new Terrain[terrainHeight][terrainWidth];
-            stones = new MyArrayList<>();
+            crates = new MyArrayList<>();
             MainFrame.gridScreenRatio = MainFrame.HEIGHT / terrainHeight;
-            player.getHitbox().setSize((int)(MainFrame.gridScreenRatio * 0.75), MainFrame.gridScreenRatio);
+            player.getHitbox().setSize(MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
             for (int i = 0; i < terrainHeight; i++) {
                 for (int j = 0; j < terrainWidth; j++) {
                     String terrainString = fileReader.next();
@@ -60,7 +60,7 @@ public class Level {
                         exit.setCurrentLevel(this);
                         terrain[i][j] = exit;
                     } else if (terrainString.equals("s")) {
-                        stones.add(new Stone (j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, terrain, stones, player));
+                        crates.add(new Crate (j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, terrain, crates, player));
                     } else if (terrainString.equals("p")) {
                         playerLoc = new Point(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio);
                     } else if (terrainString.charAt(0) == 'k') {
@@ -81,8 +81,8 @@ public class Level {
         return movingWalls;
     }
 
-    public MyArrayList<Stone> getStones() {
-        return stones;
+    public MyArrayList<Crate> getCrates() {
+        return crates;
     }
 
     public Terrain[][] getTerrain() {
