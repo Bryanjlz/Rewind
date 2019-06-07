@@ -35,7 +35,7 @@ public class GamePanel extends JPanel {
         this.currentLevel = game.getCurrentLevel();
         transAlpha = 0;
         passedBlack = false;
-        run = new BufferedImage[2][2][16];
+        run = new BufferedImage[2][2][18];
         stand = new BufferedImage[3][8];
         slide = new BufferedImage[2][2];
         jump = new BufferedImage[2][2];
@@ -125,12 +125,10 @@ public class GamePanel extends JPanel {
 
     public void paintComponent (Graphics g) {
         super.paintComponent(g);
-        //TODO: graphics
-
         if (game.isMenu()) {
             drawMenu(g);
         } else {
-            g.setColor(Color.lightGray);
+            g.setColor(Color.pink);
             g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
             drawPlayer(g);
             //g.setColor(Color.CYAN);
@@ -197,7 +195,7 @@ public class GamePanel extends JPanel {
         int h = 0;
         Image img = null;
         int direction = RIGHT;
-        if (player.getDirection() == "left") {
+        if (player.getDirection().equals("left")) {
             direction = LEFT;
         }
         int holdCrate = NOT_HOLD_CRATE;
@@ -210,8 +208,11 @@ public class GamePanel extends JPanel {
             y = (int)player.getHitbox().getY();
             if (player.isHoldingCrate()) {
                 w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                if (player.getDirection().equals("left")) {
+                    x -= MainFrame.gridScreenRatio;
+                }
             }
-            x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
+            x += (int)(player.getHitbox().getX());
             img = jump[holdCrate][direction];
 
         } else if (player.isHoldLeft() || player.isHoldRight()) {
@@ -220,40 +221,48 @@ public class GamePanel extends JPanel {
             w = (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
             if (player.isHoldingCrate()) {
                 w += MainFrame.gridScreenRatio;
+                if (player.getDirection().equals("left")) {
+                    x -= MainFrame.gridScreenRatio;
+                }
             }
-            x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
-            if (player.getFrame() >= run[0][0].length) {
+            x += (int)(player.getHitbox().getX());
+            if (player.getFrame() >= run[0][0].length - 1) {
                 player.setFrame(0);
             }
             img = run[holdCrate][direction][player.getFrame()];
-        } else if (player.getVel().getX() == 0) {
+        }  else if ((player.getAcc().getX() > 0 && player.getVel().getX() < 0) || (player.getAcc().getX() < 0 && player.getVel().getX() > 0)){
             w = MainFrame.gridScreenRatio;
             h = MainFrame.gridScreenRatio;
             y = (int)player.getHitbox().getY();
-            if (!player.isHoldingCrate()) {
-                direction = FACE_FORWARD;
-                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
-            } else {
+            if (player.isHoldingCrate()) {
                 w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
-            }
-            if (player.getFrame() >= stand[0].length) {
-                player.setFrame(0);
-            }
-            img = stand[direction][player.getFrame()];
-        } else {
-            w = MainFrame.gridScreenRatio;
-            h = MainFrame.gridScreenRatio;
-            y = (int)player.getHitbox().getY();
-            if (!player.isHoldingCrate()) {
+                if (player.getDirection().equals("left")) {
+                    x -= MainFrame.gridScreenRatio;
+                }
+            } else {
                 h /= 2;
                 y += h;
-                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
-            } else {
-                w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                x = (int)(player.getHitbox().getX() + player.getHitbox().getWidth() / 2 - w / 2);
             }
+            x += (int)(player.getHitbox().getX());
             img = slide[holdCrate][direction];
+        }else {
+            w = MainFrame.gridScreenRatio;
+            h = MainFrame.gridScreenRatio;
+            y = (int)player.getHitbox().getY();
+            if (player.isHoldingCrate()) {
+                w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                if (player.getDirection().equals("left")) {
+                    x -= MainFrame.gridScreenRatio;
+                }
+            } else {
+                direction = FACE_FORWARD;
+
+            }
+            x += (int)(player.getHitbox().getX());
+            if (player.getFrame() >= (stand[0].length * 2) - 1) {
+                player.setFrame(0);
+            }
+            img = stand[direction][player.getFrame() / 2];
         }
         g.drawImage(img, x, y, w, h, null);
     }
@@ -304,8 +313,7 @@ public class GamePanel extends JPanel {
         for (int i = 0; i < player.getKeys().size(); i++) {
             if (!player.getKeys().get(i).isPickedUp()) {
                 Rectangle hitbox = player.getKeys().get(i).getHitbox();
-                g.setColor(Color.YELLOW);
-                g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
+                g.drawImage(key, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
             }
         }
     }

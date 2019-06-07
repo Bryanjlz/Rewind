@@ -53,7 +53,7 @@ public class MainFrame extends JFrame {
                     }
                     break;
                 case KeyEvent.VK_A:
-                    if (!player.isReversing()) {
+                    if (!player.isReversing() && !player.isHoldRight()) {
                         player.setHoldLeft(true);
                         if (player.isHoldingCrate() && player.getDirection().equals("right")) {
                             Rectangle crateBox = new Rectangle(player.getHeldCrate().getHitbox());
@@ -83,7 +83,7 @@ public class MainFrame extends JFrame {
                     }
                     break;
                 case KeyEvent.VK_D:
-                    if (!player.isReversing()) {
+                    if (!player.isReversing() && !player.isHoldLeft()) {
                         player.setHoldRight(true);
                         if (player.isHoldingCrate() && player.getDirection().equals("left")) {
                             Rectangle crateBox = new Rectangle(player.getHeldCrate().getHitbox());

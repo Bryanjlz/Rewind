@@ -329,7 +329,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             int y = 0;
             int w = 0;
             int h = 0;
-            if (isHoldLeft() || isHoldRight()) {
+            if (!isOnGround()) {
+                h = (int)MainFrame.gridScreenRatio;
+                y = (int) getHitbox().getY();
+                w = (int)(MainFrame.gridScreenRatio);
+                x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
+            }else if (isHoldLeft() || isHoldRight()) {
                 h = MainFrame.gridScreenRatio;
                 y = (int) getHitbox().getY();
                 w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
@@ -340,8 +345,10 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 y = (int)getHitbox().getY();
                 if (isHoldingCrate()) {
                     w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                    x = (int)(getHitbox().getX());
+                } else {
+                    x = (int) (getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
                 }
-                x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
             }
             getHitbox().setLocation(x, y);
             getHitbox().setSize(w, h);
@@ -522,7 +529,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             getVel().setX(0);
             getHitbox().setLocation(xPos, (int) getHitbox().getY());
         } else {
-            int yPos = 0;
+            int yPos;
             if (getVel().getY() > 0) {
                 yPos = (int) (wBox.getY() - getHitbox().getHeight());
                 getVel().setY(0);
@@ -530,7 +537,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             } else {
                 yPos = (int) (wBox.getY() + wBox.getHeight());
                 onGround = false;
-                //getVel().setY(-getVel().getY() * 0.2);
                 getVel().setY(0);
             }
             if (isHoldingCrate()) {
