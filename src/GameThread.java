@@ -11,7 +11,7 @@ public class GameThread implements Runnable {
     MyArrayList<Pew> pews;
 
     public GameThread (Player player) {
-        level = 5;
+        level = 1;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
@@ -43,10 +43,6 @@ public class GameThread implements Runnable {
 
     public Rectangle getPlayHitbox() {
         return playHitbox;
-    }
-
-    public int getLevel() {
-        return level;
     }
 
     public boolean isRestartLevel() {

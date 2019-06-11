@@ -1,8 +1,13 @@
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.Scanner;
 
+/**
+ * Level
+ * A level for the game
+ * @author Bryan Zhang
+ * @since
+ */
 public class Level {
     private Terrain[][] terrain;
     private MyArrayList<Crate> crates;

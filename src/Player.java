@@ -1,4 +1,6 @@
-import java.awt.*;
+import java.awt.Rectangle;
+import java.awt.Point;
+
 public class Player implements Movable, Updatable, Reversable<Player> {
     private Rectangle hitbox;
     private double gravityAcc;
@@ -11,7 +13,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private MyArrayList<Key> keys;
     private boolean isHoldingCrate;
     private Crate heldCrate;
-    private int timePower;
     private boolean holdUp;
     private boolean holdLeft;
     private boolean holdRight;
@@ -25,15 +26,15 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private MyQueue<Player> objectQueue;
     private int frame;
     static double SIDE_WIDTH_RATIO = 50.0 / 85.0;
-    static double FACE_WIDTH_RATIO = 1;
-    static double SLIDE_HEIGHT_RATIO = 0.5;
-    static double BOX_DIMENSION_RATIO = 1;
     static final double GRAVITY_RATIO = 0.03;
     static final double X_MAX_VEL_RATIO = 0.15;
     static final double Y_MAX_VEL_RATIO = 0.38;
     static final double RUN_ACC_RATIO = 0.02;
     static final double AIR_MOVE_ACC_RATIO = 0.005;
 
+    /**
+     * Creates a player.
+     */
     Player() {
         hitbox = new Rectangle (0, 0, (int)(MainFrame.gridScreenRatio * 0.75), MainFrame.gridScreenRatio);
         vel = new MyVector(0, 0);
@@ -41,7 +42,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         keys = new MyArrayList<Key>();
         isHoldingCrate = false;
         heldCrate = null;
-        timePower = 0;
         onGround = false;
         direction = "left";
         objectQueue = new MyQueue<Player>();
@@ -50,9 +50,9 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
     /**
      * Creates a deep copy of another player; used when saving previous states.
-     * @param player Player to copy.
+     * @param player Player to copy from.
      */
-    Player(Player player) {
+    private Player (Player player) {
         hitbox = new Rectangle (player.getHitbox());
         xMaxVel = player.getxMaxVel();
         yMaxVel = player.getyMaxVel();
@@ -63,7 +63,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         acc = new MyVector(player.getAcc());
         isHoldingCrate = false;
         heldCrate = null;
-        timePower = player.getTimePower();
         onGround = false;
         direction = player.getDirection();
         terrain = player.getTerrain();
@@ -80,7 +79,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
     /**
      * Creates a shallow copy of another player object; used when rewinding time.
-     * @param player Player to copy.
+     * @param player Player to copy from.
      */
     public void clone (Player player) {
         hitbox = player.getHitbox();
@@ -93,7 +92,6 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         acc = player.getAcc();
         isHoldingCrate = player.isHoldingCrate();
         heldCrate = player.getHeldCrate();
-        timePower = player.getTimePower();
         onGround = false;
         direction = player.getDirection();
         terrain = player.getTerrain();
@@ -106,181 +104,308 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
     }
 
-    public void setHitbox(Rectangle hitbox) {
-        this.hitbox = hitbox;
-    }
-
+    /**
+     * Gets the hitbox of the player.
+     * @return The hitbox.
+     */
     public Rectangle getHitbox() {
         return hitbox;
     }
 
+    /**
+     * Sets the velocity vector of the player.
+     * @param vel The velocity vector.
+     */
     @Override
     public void setVel(MyVector vel) {
         this.vel = vel;
     }
 
+    /**
+     * Gets the velocity vector of the player.
+     * @return The velocity vector.
+     */
     @Override
     public MyVector getVel() {
         return vel;
     }
 
+    /**
+     * Gets the acceleration vector of the player.
+     * @return The acceleration vector.
+     */
     public MyVector getAcc() {
         return acc;
     }
 
+    /**
+     * Sets the acceleration vector of the player.
+     * @param acc The acceleration vector.
+     */
     public void setAcc(MyVector acc) {
         this.acc = acc;
     }
 
-    public void setHoldingCrate(boolean holdingCrate) {
-        isHoldingCrate = holdingCrate;
-    }
-
+    /**
+     * Checks if the player is holding a crate.
+     * @return A boolean that represents if the player is holding a crate.
+     */
     public boolean isHoldingCrate() {
         return isHoldingCrate;
     }
 
-    public void setTimePower(int timePower) {
-        this.timePower = timePower;
-    }
-
-    public int getTimePower() {
-        return timePower;
-    }
-
+    /**
+     * Sets the boolean if the player is pressing up key.
+     * @param holdUp A boolean that represents if the player is pressing up key.
+     */
     public void setHoldUp(boolean holdUp) {
         this.holdUp = holdUp;
     }
 
+    /**
+     * Checks if the player is pressing up key.
+     * @return A boolean that represents if the player is pressing up key.
+     */
     public boolean isHoldUp() {
         return holdUp;
     }
 
+    /**
+     * Sets the boolean if the player is pressing left key.
+     * @param holdLeft A boolean that represents if the player is pressing left key.
+     */
     public void setHoldLeft(boolean holdLeft) {
         this.holdLeft = holdLeft;
     }
 
+    /**
+     * Checks if the player is pressing left key.
+     * @return A boolean that represents if the player is pressing left key.
+     */
     public boolean isHoldLeft() {
         return holdLeft;
     }
 
+    /**
+     * Sets the boolean if the player is pressing right key.
+     * @param holdRight A boolean that represents if the player is pressing right key.
+     */
     public void setHoldRight(boolean holdRight) {
         this.holdRight = holdRight;
     }
 
+    /**
+     * Checks if the player is pressing right key.
+     * @return A boolean that represents if the player is pressing tight key.
+     */
     public boolean isHoldRight() {
         return holdRight;
     }
 
+    /**
+     * Sets the direction the player is facing.
+     * @param direction A string that represents the direction the player is facing.
+     */
     public void setDirection(String direction) {
         this.direction = direction;
     }
 
+    /**
+     * Gets the direction the player is facing.
+     * @return A string that represents the direction the player is facing.
+     */
     public String getDirection() {
         return direction;
     }
 
+    /**
+     * Sets the terrain the player has reference to.
+     * @param terrain The 2D array of terrain.
+     */
     public void setTerrain(Terrain[][] terrain) {
         this.terrain = terrain;
     }
 
+    /**
+     * Gets the terrain the player has a reference to.
+     * @return The 2D array of terrain.
+     */
+    public Terrain[][] getTerrain() {
+        return terrain;
+    }
+
+    /**
+     * Sets the crates the player has reference to.
+     * @param crates The ArrayList of crates.
+     */
     public void setCrates(MyArrayList<Crate> crates) {
         this.crates = crates;
     }
 
+    /**
+     * Gets the crates the player has a reference to.
+     * @return An ArrayList of crates.
+     */
+    public MyArrayList<Crate> getCrates() {
+        return crates;
+    }
+
+    /**
+     * Gets the crate the player is holding onto.
+     * @return The crate.
+     */
     public Crate getHeldCrate() {
         return heldCrate;
     }
 
+    /**
+     * Checks if the player is on the ground.
+     * @return A boolean that represents if the player is on the ground.
+     */
     public boolean isOnGround() {
         return onGround;
     }
 
+    /**
+     * Checks if the player is dead.
+     * @return A boolean that represents if the player is dead.
+     */
     public boolean isDead() {
         return isDead;
     }
 
+    /**
+     * Sets the boolean that represents if the player is dead.
+     * @param dead A boolean that represents if the player is dead.
+     */
     public void setDead(boolean dead) {
         isDead = dead;
     }
 
+    /**
+     * Checks if the player is being reversed.
+     * @return A boolean that represents if the player is being reversed.
+     */
     public boolean isReverse() {
         return isReverse;
     }
 
+    /**
+     * Sets the boolean that represents if the player is being reversed.
+     * @param reverse A boolean that represents if the player is being reversed.
+     */
     public void setReverse(boolean reverse) {
         isReverse = reverse;
     }
 
+    /**
+     * Checks if the player is reversing something.
+     * @return A boolean that represents if the player is reversing something.
+     */
     public boolean isReversing() {
         return isReversing;
     }
 
+    /**
+     * Sets the boolean that represents if the player is reversing something.
+     * @param reversing A boolean that represents if the player is reversing something.
+     */
     public void setReversing(boolean reversing) {
         isReversing = reversing;
     }
 
+    /**
+     * Gets the object queue that stores previous states of the player.
+     * @return The queue that stores previous states of the player.
+     */
     @Override
     public MyQueue<Player> getObjectQueue() {
         return objectQueue;
     }
 
+    /**
+     * Sets the queue that stores previous states of the player.
+     * @param objectQueue A queue that stores previous states of the player.
+     */
     public void setObjectQueue(MyQueue<Player> objectQueue) {
         this.objectQueue = objectQueue;
     }
 
-    public Terrain[][] getTerrain() {
-        return terrain;
-    }
-
-    public MyArrayList<Crate> getCrates() {
-        return crates;
-    }
-
+    /**
+     * Gets the max x velocity of the player.
+     * @return An int that represents the max x velocity of the player.
+     */
     public double getxMaxVel() {
         return xMaxVel;
     }
 
+    /**
+     * Gets the gravity acceleration.
+     * @return A double that represents the gravity acceleration.
+     */
     public double getGravityAcc() {
         return gravityAcc;
     }
 
+    /**
+     * Gets the max y velocity.
+     * @return A double that represents the max y velocity.
+     */
     public double getyMaxVel() {
         return yMaxVel;
     }
 
+    /**
+     * Gets the run acceleration.
+     * @return A double that represents the run acceleration.
+     */
     public double getRunAcc() {
         return runAcc;
     }
 
-    public void setRunAcc(double runAcc) {
-        this.runAcc = runAcc;
-    }
-
+    /**
+     * Gets the acceleration of the player when in the air.
+     * @return A double that represents the acceleration of the player in the air.
+     */
     public double getAirMoveAcc() {
         return airMoveAcc;
     }
 
-    public void setAirMoveAcc(double airMoveAcc) {
-        this.airMoveAcc = airMoveAcc;
-    }
-
+    /**
+     * Sets the ArrayList of keys that player holds.
+     * @param keys The ArrayList of keys.
+     */
     public void setKeys(MyArrayList<Key> keys) {
         this.keys = keys;
     }
 
+    /**
+     * Gets the ArrayList of keys that player holds.
+     * @return The ArrayList of keys.
+     */
     public MyArrayList<Key> getKeys() {
         return keys;
     }
 
+    /**
+     * Sets the animation frame of the player.
+     * @param frame The animation frame number of the player.
+     */
     public void setFrame(int frame) {
         this.frame = frame;
     }
 
+    /**
+     * Gets the animation frame number of the player.
+     * @return The animation frame number of the player.
+     */
     public int getFrame() {
         return frame;
     }
 
+    /**
+     * Make sure all values are relative to the grid to screen ratio.
+     */
     void startLevel() {
         xMaxVel = MainFrame.gridScreenRatio * X_MAX_VEL_RATIO;
         yMaxVel = MainFrame.gridScreenRatio * Y_MAX_VEL_RATIO;
@@ -289,12 +414,19 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         airMoveAcc = MainFrame.gridScreenRatio * AIR_MOVE_ACC_RATIO;
     }
 
+    /**
+     * Updates the player.
+     */
     @Override
     public void update() {
-        if (!isReverse() || !isReversing()) {
+        // Stop updating player if time is being reversed
+        if (!isReversing()) {
+            // Jump if press up
             if (isHoldUp()) {
                 jump();
             }
+
+            // Move left
             if (isHoldLeft()) {
                 if (vel.getX() > -xMaxVel) {
                     if (onGround && (acc.getX() < vel.getX())) {
@@ -305,6 +437,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 } else {
                     acc.setX(0);
                 }
+
+             // Move right
             } else if (isHoldRight()) {
                 if (vel.getX() < xMaxVel) {
                     if (onGround && (acc.getX() > vel.getX())) {
@@ -315,9 +449,13 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 } else {
                     acc.setX(0);
                 }
+
+             // If no key are being pressed and velocity and acceleration are same direction, set acceleration to 0
             } else if (((vel.getX() < 0) && (acc.getX() < 0)) || ((vel.getX() > 0) && (acc.getX() > 0))) {
                 vel.setX(0);
                 acc.setX(0);
+
+             // Apply drags if on ground
             } else if (onGround && getVel().getX() != 0) {
                 if (getVel().getX() > 0) {
                     getAcc().setX(-runAcc);
@@ -325,24 +463,31 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                     getAcc().setX(runAcc);
                 }
             }
-            int x = 0;
-            int y = 0;
-            int w = 0;
-            int h = 0;
+
+            // Change the size and location of the hitbox of the player depending on its current action
+            int x;
+            int y;
+            int w;
+            int h;
             if (!isOnGround()) {
-                h = (int)MainFrame.gridScreenRatio;
+                // Jump hitbox
+                h = MainFrame.gridScreenRatio;
                 y = (int) getHitbox().getY();
-                w = (int)(MainFrame.gridScreenRatio);
+                w = MainFrame.gridScreenRatio;
                 x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
             }else if (isHoldLeft() || isHoldRight()) {
+                // Running hitbox
                 h = MainFrame.gridScreenRatio;
                 y = (int) getHitbox().getY();
                 w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
                 x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
             } else {
+                // Sliding and standing hitboz
                 w = MainFrame.gridScreenRatio;
                 h = MainFrame.gridScreenRatio;
                 y = (int)getHitbox().getY();
+
+                // If holding crate with sliding or standing hitbox
                 if (isHoldingCrate()) {
                     w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
                     x = (int)(getHitbox().getX());

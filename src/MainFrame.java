@@ -1,9 +1,14 @@
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.DataLine;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.File;
 
 public class MainFrame extends JFrame {
     private GameThread game;
@@ -12,24 +17,32 @@ public class MainFrame extends JFrame {
     static final int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
     static final int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
     static int gridScreenRatio;
+
+    /**
+     * Constructor for the JFrame of the game
+     */
     public MainFrame () {
-        // create jframe
+        // Create jframe
         super("Not a Nice Game");
         this.setSize(WIDTH, HEIGHT);
         this.setResizable(false);
+
+        // Create player and start game loop thread
         player = new Player();
-        System.out.println(HEIGHT + " " + WIDTH);
         game = new GameThread(player);
         Thread thread = new Thread(game);
         thread.start();
 
+        // Add the game panel
         panel = new GamePanel(game);
         panel.setThread(thread);
         this.add(panel);
 
+        // Add key listener
         MyKeyListener keyListener = new MyKeyListener();
         this.addKeyListener(keyListener);
 
+        // Add mouse listener
         MyMouseListener mouseListener = new MyMouseListener();
         this.addMouseListener(mouseListener);
 
@@ -37,6 +50,20 @@ public class MainFrame extends JFrame {
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setUndecorated(true);
         this.setVisible(true);
+
+        // Load and play background music
+        try {
+            File music = new File("assets/sounds/bgm.wav");
+            AudioInputStream sound = AudioSystem.getAudioInputStream(music);
+            DataLine.Info info = new DataLine.Info(Clip.class, sound.getFormat());
+            Clip bgm = (Clip) AudioSystem.getLine(info);
+            bgm.open(sound);
+            bgm.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     private class MyKeyListener implements KeyListener {
