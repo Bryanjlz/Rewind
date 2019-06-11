@@ -1,6 +1,11 @@
 import java.awt.Rectangle;
 import java.awt.Point;
 
+/**
+ * Player
+ * A class that holds a player.
+ * @author Bryan Zhang
+ */
 public class Player implements Movable, Updatable, Reversable<Player> {
     private Rectangle hitbox;
     private double gravityAcc;
@@ -23,9 +28,9 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private boolean isDead;
     private boolean isReverse;
     private boolean isReversing;
-    private MyQueue<Player> objectQueue;
+    private MyQueue<Player> previousStateQueue;
     private int frame;
-    static double SIDE_WIDTH_RATIO = 50.0 / 85.0;
+    static double SIDE_WIDTH_RATIO = 50.0 / 120.0;
     static final double GRAVITY_RATIO = 0.03;
     static final double X_MAX_VEL_RATIO = 0.15;
     static final double Y_MAX_VEL_RATIO = 0.38;
@@ -44,7 +49,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         heldCrate = null;
         onGround = false;
         direction = "left";
-        objectQueue = new MyQueue<Player>();
+        previousStateQueue = new MyQueue<Player>();
         frame = 0;
     }
 
@@ -69,7 +74,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         crates = player.getCrates();
         isReverse = true;
         isReversing = true;
-        objectQueue = new MyQueue<Player>(player.getObjectQueue());
+        previousStateQueue = new MyQueue<Player>(player.getPreviousStateQueue());
         keys = new MyArrayList<Key>();
         for (int i = 0; i < player.getKeys().size(); i++) {
             keys.add(new Key(player.getKeys().get(i)));
@@ -98,7 +103,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         crates = player.getCrates();
         isReverse = player.isReverse();
         isReversing = player.isReversing();
-        objectQueue = player.getObjectQueue();
+        previousStateQueue = player.getPreviousStateQueue();
         keys = player.getKeys();
         frame = player.getFrame();
 
@@ -144,6 +149,14 @@ public class Player implements Movable, Updatable, Reversable<Player> {
      */
     public void setAcc(MyVector acc) {
         this.acc = acc;
+    }
+
+    /**
+     * Sets the boolean that represents if the player is holding a crate.
+     * @param holdingCrate A boolean that represents if the player is holding a crate.
+     */
+    public void setHoldingCrate(boolean holdingCrate) {
+        isHoldingCrate = holdingCrate;
     }
 
     /**
@@ -319,16 +332,16 @@ public class Player implements Movable, Updatable, Reversable<Player> {
      * @return The queue that stores previous states of the player.
      */
     @Override
-    public MyQueue<Player> getObjectQueue() {
-        return objectQueue;
+    public MyQueue<Player> getPreviousStateQueue() {
+        return previousStateQueue;
     }
 
     /**
      * Sets the queue that stores previous states of the player.
-     * @param objectQueue A queue that stores previous states of the player.
+     * @param previousStateQueue A queue that stores previous states of the player.
      */
-    public void setObjectQueue(MyQueue<Player> objectQueue) {
-        this.objectQueue = objectQueue;
+    public void setPreviousStateQueue(MyQueue<Player> previousStateQueue) {
+        this.previousStateQueue = previousStateQueue;
     }
 
     /**
@@ -469,18 +482,13 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             int y;
             int w;
             int h;
-            if (!isOnGround()) {
-                // Jump hitbox
-                h = MainFrame.gridScreenRatio;
-                y = (int) getHitbox().getY();
-                w = MainFrame.gridScreenRatio;
-                x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
-            }else if (isHoldLeft() || isHoldRight()) {
-                // Running hitbox
+            if (!isOnGround() || isHoldLeft() || isHoldRight()) {
+                // Jump or run hitbox
                 h = MainFrame.gridScreenRatio;
                 y = (int) getHitbox().getY();
                 w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                x = (int)(getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
+                x = (int) (getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
+
             } else {
                 // Sliding and standing hitboz
                 w = MainFrame.gridScreenRatio;
@@ -490,33 +498,51 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 // If holding crate with sliding or standing hitbox
                 if (isHoldingCrate()) {
                     w = (int)(SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                    x = (int)(getHitbox().getX());
+                    x = (int) (getHitbox().getX() + (getHitbox().getWidth() / 2) - (w / 2));
                 } else {
-                    x = (int) (getHitbox().getX() + getHitbox().getWidth() / 2 - w / 2);
+                    x = (int) (getHitbox().getX() + (getHitbox().getWidth() / 2) - (w / 2));
                 }
             }
+
+            // Change hitbox
             getHitbox().setLocation(x, y);
             getHitbox().setSize(w, h);
+
+            // Add to animation frame number
             frame++;
+
+            // Gravity and maximum y velocity check
             if (vel.getY() > yMaxVel) {
                 acc.setY(0);
             } else {
                 acc.setY(gravityAcc);
             }
 
+            // Update velocities
             vel.setX(vel.getX() + acc.getX());
             vel.setY(vel.getY() + acc.getY());
+
+            // Try move
             tryMove((int) vel.getX(), (int) vel.getY());
+
+            // Check if player is in the screen
             checkInScreen();
-            if (getObjectQueue().isEmpty() || !equals(getObjectQueue().getLast())) {
-                getObjectQueue().add(new Player(this));
+
+            // Add current state to queue
+            if (getPreviousStateQueue().isEmpty() || !equals(getPreviousStateQueue().getLast())) {
+                getPreviousStateQueue().add(new Player(this));
             }
         } else {
+
+            // If rewinding, drop crate
             heldCrate.setPickedUp(false);
             heldCrate = null;
         }
     }
-    
+
+    /**
+     * Interact with keys or crates in front of player
+     */
     void interact() {
         if (direction.equals("left")) {
             if (!isHoldingCrate()) {
@@ -537,8 +563,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
     }
 
+    /**
+     * Unlock a door if player has a matching key and is in range.
+     * @param p A point that represents where the player can reach.
+     */
     private void unlockDoor (Point p) {
-        boolean foundDoor = false;
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
                 if (terrain[i][j] instanceof Door && terrain[i][j].getHitbox().contains(p) && keys.size() != 0) {
@@ -553,6 +582,10 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
     }
 
+    /**
+     * Pick up a crate if the player is in range.
+     * @param p A point that represents where the player can reach.
+     */
     private void pickUpCrate (Point p) {
         boolean foundCrate = false;
         for (int i = 0; i < crates.size() && !foundCrate; i++) {
@@ -566,6 +599,9 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
     }
 
+    /**
+     * Place down the crate the player is holding.
+     */
     public void placeDownCrate () {
         heldCrate.setPickedUp(false);
         isHoldingCrate = false;
@@ -577,30 +613,49 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
         heldCrate = null;
     }
-    
+
+    /**
+     * Changes the y velocity of the player to emulate a jump.
+     */
     private void jump() {
         if (onGround) {
             vel.setY(-yMaxVel);
         }
     }
 
+    /**
+     * Tries to move the player through the x and y translations.
+     * @param xMove The x translation.
+     * @param yMove The y translation.
+     */
     private void tryMove (int xMove, int yMove) {
+        // Try the x translation first
         getHitbox().translate(xMove, 0);
+        // If holding a crate, move the crate as well
         if (isHoldingCrate()) {
             heldCrate.getHitbox().translate(xMove, 0);
         }
         checkWallCollisions(true);
+
+        // Try the y translation
         getHitbox().translate(0, yMove);
+        // If holding a crate, move the crate as well
         if (isHoldingCrate()) {
             heldCrate.getHitbox().translate(0, yMove);
         }
-        if (checkWallCollisions(false)) {
+        if (!checkWallCollisions(false)) {
             onGround = false;
         }
+
+        // Check collision with other objects (key, exit)
         checkTerrainCollisions();
     }
 
+    /**
+     * Check collision with exit and key.
+     */
     private void checkTerrainCollisions() {
+        // Check collision with exits
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
                 if (terrain[i][j] instanceof Exit) {
@@ -608,47 +663,72 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 }
             }
         }
+
+        // Check collision with keys
         for (int i = 0; i < keys.size(); i++) {
-            if (keys.get(i).getHitbox().intersects(getHitbox())) {
+            if (keys.get(i).collide(getHitbox())) {
                 keys.get(i).setPickedUp(true);
             }
         }
     }
 
+    /**
+     * Checks collision with objects you can't move through (crates, walls, and locked doors)
+     * @param tryX If the player is moving through x translation or y translation.
+     * @return A boolean that represents if the player is colliding with anything.
+     */
     private boolean checkWallCollisions (boolean tryX) {
-        boolean okMove = true;
-        for (int i = 0; i < terrain.length && okMove; i++) {
-            for (int j = 0; j < terrain[0].length && okMove; j++) {
+        boolean collided;
+
+        // Check collision with walls hat aren't doors and locked doors
+        for (int i = 0; i < terrain.length; i++) {
+            for (int j = 0; j < terrain[0].length; j++) {
                 if ((terrain[i][j] instanceof Wall && !(terrain[i][j] instanceof Door)) || (terrain[i][j] instanceof Door && !((Door)terrain[i][j]).isUnlocked())) {
+
+                    // If player is holding crate, also check crate collision
                     if(isHoldingCrate()) {
-                        okMove = !((Wall)(terrain[i][j])).collide(heldCrate.getHitbox()) && !((Wall)(terrain[i][j])).collide(getHitbox());
+                        collided = ((Wall)(terrain[i][j])).collide(heldCrate.getHitbox()) || ((Wall)(terrain[i][j])).collide(getHitbox());
                     } else {
-                        okMove = !((Wall)(terrain[i][j])).collide(getHitbox());
+                        collided = ((Wall)(terrain[i][j])).collide(getHitbox());
                     }
-                    if (!okMove) {
+                    if (collided) {
                         wallCollide(terrain[i][j].getHitbox(), tryX);
+                        return true;
                     }
                 }
             }
         }
-        for (int i = 0; i < crates.size() && okMove; i++) {
+
+        // Check collision with crates
+        for (int i = 0; i < crates.size(); i++) {
             if (crates.get(i) != heldCrate) {
+
+                // If holding crate, also check crate collision
                 if(isHoldingCrate()) {
-                    okMove = !crates.get(i).collide(heldCrate.getHitbox()) && !crates.get(i).collide(getHitbox());
+                    collided = crates.get(i).collide(heldCrate.getHitbox()) || crates.get(i).collide(getHitbox());
                 } else {
-                    okMove = !crates.get(i).collide(getHitbox());
+                    collided = crates.get(i).collide(getHitbox());
                 }
-                if (!okMove) {
+                if (collided) {
                     wallCollide(crates.get(i).getHitbox(),tryX);
+                    return true;
                 }
             }
         }
-        return okMove;
+        return false;
     }
 
+    /**
+     * Collide with a certain hitbox, use boolen tryX to know whether the player is moving through x or y translation.
+     * @param wBox The hitbox of the wall to collide with.
+     * @param tryX
+     */
     private void wallCollide (Rectangle wBox, boolean tryX) {
+        // The player is moving through x translation
         if (tryX) {
-            int xPos = 0;
+            int xPos;
+
+            // Player is looking right
             if (getDirection().equals("right")) {
                 if (wBox.getX() > getHitbox().getX()) {
                     xPos = (int) (wBox.getX() - getHitbox().getWidth());
@@ -658,6 +738,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                 } else {
                     xPos = (int) (wBox.getX() + wBox.getWidth());
                 }
+
+             // Player is looking left
             } else {
                 if (wBox.getX() < getHitbox().getX()) {
                     xPos = (int) (wBox.getX() + wBox.getWidth());
@@ -668,29 +750,46 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                     xPos = (int) (wBox.getX() - getHitbox().getWidth());
                 }
             }
+
+            // Also move crate hitbox if player is holding one
             if (isHoldingCrate()) {
                 heldCrate.getHitbox().translate((int) (xPos - getHitbox().getX()), 0);
             }
+
+            // Move player to the selected location at edge of wall, and set their x velocity to 0
             getVel().setX(0);
             getHitbox().setLocation(xPos, (int) getHitbox().getY());
+
+        //Move through y translation
         } else {
             int yPos;
+
+            // If is moving down and collided with wall
             if (getVel().getY() > 0) {
                 yPos = (int) (wBox.getY() - getHitbox().getHeight());
                 getVel().setY(0);
                 onGround = true;
+
+            // If moving up and collided with a wall
             } else {
                 yPos = (int) (wBox.getY() + wBox.getHeight());
                 onGround = false;
                 getVel().setY(0);
             }
+
+            // Translate held crate if player is holding one
             if (isHoldingCrate()) {
                 heldCrate.getHitbox().translate(0, (int) (yPos - getHitbox().getY()));
             }
+
+            // Translate player
             getHitbox().setLocation((int) getHitbox().getX(), yPos);
         }
     }
 
+    /**
+     * checks if the player is in the visible grid, and kills the player if it isn't.
+     */
     private void checkInScreen () {
         int xPos = (int)getHitbox().getX();
         int yPos = (int)getHitbox().getY();
@@ -699,7 +798,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         }
     }
 
-
+    /**
+     * Checks if two players have the same position, velocity, and acceleration.
+     * @param player The other player.
+     * @return A boolean that represents if the two have the same position, velocity, and acceleration.
+     */
     private boolean equals(Player player) {
         if (!getHitbox().equals(player.getHitbox())) {
             return false;

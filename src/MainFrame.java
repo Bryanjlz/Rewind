@@ -35,7 +35,6 @@ public class MainFrame extends JFrame {
 
         // Add the game panel
         panel = new GamePanel(game);
-        panel.setThread(thread);
         this.add(panel);
 
         // Add key listener
@@ -80,7 +79,7 @@ public class MainFrame extends JFrame {
                     }
                     break;
                 case KeyEvent.VK_A:
-                    if (!player.isReversing() && !player.isHoldRight()) {
+                    if (!(player.isReversing()) && !(player.isHoldRight())) {
                         player.setHoldLeft(true);
                         if (player.isHoldingCrate() && player.getDirection().equals("right")) {
                             Rectangle crateBox = new Rectangle(player.getHeldCrate().getHitbox());
@@ -169,6 +168,7 @@ public class MainFrame extends JFrame {
                     player.interact();
                     break;
                 case KeyEvent.VK_ESCAPE:
+                    game.setRunning(false);
                     System.exit(0);
             }
 

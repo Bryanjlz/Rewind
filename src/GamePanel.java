@@ -1,24 +1,32 @@
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
+import javax.swing.JPanel;
 import java.io.File;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Font;
+import java.awt.Rectangle;
+
+/**
+ * GamePanel
+ * The JPanel for the game to display graphics.
+ */
 public class GamePanel extends JPanel {
     private GameThread game;
-    private Thread thread;
     private Player player;
     private Level currentLevel;
     private boolean transition;
     private int transAlpha;
     private boolean passedBlack;
-    static final int NOT_HOLD_CRATE = 0;
-    static final int HOLD_CRATE = 1;
-    static final int RIGHT = 0;
-    static final int LEFT = 1;
-    static final int FACE_FORWARD = 2;
-    static final int LOCKED = 0;
-    static final int UNLOCKED = 1;
+    private static final int NOT_HOLD_CRATE = 0;
+    private static final int HOLD_CRATE = 1;
+    private static final int RIGHT = 0;
+    private static final int LEFT = 1;
+    private static final int FACE_FORWARD = 2;
+    private static final int LOCKED = 0;
+    private static final int UNLOCKED = 1;
     private BufferedImage[][][] run;
     private BufferedImage[][] stand;
     private BufferedImage[][] slide;
@@ -28,6 +36,10 @@ public class GamePanel extends JPanel {
     private BufferedImage crate;
     private BufferedImage[] door;
 
+    /**
+     * Creates the panel.
+     * @param game Used to be able to reference the info about the current level, player, etc.
+     */
     public GamePanel (GameThread game) {
         super();
         this.game = game;
@@ -42,14 +54,18 @@ public class GamePanel extends JPanel {
         door = new BufferedImage[2];
         loadImages();
     }
-    public void setThread(Thread thread) {
-        this.thread = thread;
-    }
 
+    /**
+     * Sets the transition boolean.
+     * @param transition A boolean that represents if the Panel should run transition.
+     */
     public void setTransition(boolean transition) {
         this.transition = transition;
     }
 
+    /**
+     * Loads the images that are required for the game.
+     */
     private void loadImages() {
         // Load player run images
         for (int i = 0; i < run.length; i++) {
@@ -57,7 +73,6 @@ public class GamePanel extends JPanel {
                 for (int k = 0; k < run[0][0].length; k++) {
                     int playerNum = i * run[0].length * run[0][0].length + j * run[0][0].length + k + 1;
                     File file = new File("assets/images/player/run/player" + playerNum + ".png");
-                    //System.out.println("assets/images/player/run/player" + playerNum + ".png");
                     try {
                         run[i][j][k] = ImageIO.read(file);
                     } catch (Exception e) {
@@ -106,7 +121,7 @@ public class GamePanel extends JPanel {
             }
         }
 
-        // Load terrain block
+        // Load terrain blocks
         try {
             key = ImageIO.read(new File("assets/images/terrain/key.png"));
             wall = ImageIO.read(new File("assets/images/terrain/wall.png"));
@@ -123,150 +138,220 @@ public class GamePanel extends JPanel {
         }
     }
 
+    /**
+     * Used to draw graphics on the JPanel.
+     * @param g Used to draw graphics.
+     */
+    @Override
     public void paintComponent (Graphics g) {
         super.paintComponent(g);
+
+        // Draw menu
         if (game.isMenu()) {
             drawMenu(g);
         } else {
+
+            // Draw Background
             g.setColor(Color.pink);
             g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
-            drawPlayer(g);
-            //g.setColor(Color.CYAN);
-            //g.fillRect((int) player.getHitbox().getX(), (int) player.getHitbox().getY(), (int) player.getHitbox().getWidth(), (int) player.getHitbox().getHeight());
-            if (player.isReverse()) {
-                g.setColor(Color.BLACK);
-                g.drawString("Rewiinndd", (int) (player.getHitbox().getX() + player.getHitbox().getWidth() / 4), (int) (player.getHitbox().getY() + player.getHitbox().getHeight() / 2));
-            }
 
+            drawPlayer(g);
             drawTerrain(g);
+
+            // Draw FPS
             g.setColor(Color.black);
             g.drawString(Integer.toString(game.getFps()), 100, 100);
 
+            // If level is finished or the player died, set transition to true
             if (player.isDead() || currentLevel.isLevelFinished()) {
                 transition = true;
             }
-            /*
-            if (currentLevel.isLevelFinished()) {
-                g.setFont(new Font("Arial", Font.PLAIN, 200));
-                g.setColor(Color.BLACK);
-                g.drawString("YOU WIINN!!!", MainFrame.WIDTH / 5 + 25, MainFrame.HEIGHT / 2);
-                for (int i = 0; i < game.pews.size(); i++) {
-                    g.setColor(game.pews.get(i).colour);
-                    g.setFont(game.pews.get(i).font);
-                    g.drawString(Pew.pew, game.pews.get(i).x, game.pews.get(i).y);
-                }
-            }
-            */
-            g.setFont(new Font("Arial", Font.PLAIN, 12));
         }
+
+        // Run transition
         if (transition) {
-            if (transAlpha < 255 && !passedBlack) {
-                transAlpha += 15;
-            } else {
-                if (transAlpha == 255) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                passedBlack = true;
-                transAlpha -= 15;
-                if (transAlpha == 0) {
-                    transition = false;
-                    passedBlack = false;
-                }
-            }
-            try {
-                Thread.sleep(27);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            g.setColor(new Color(0, 0, 0, transAlpha));
-            g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+            drawTransition (g);
         }
+
+        // Repaint
         this.repaint();
     }
 
+    /**
+     * Draw the transition
+     * @param g Used to draw graphics.
+     */
+    private void drawTransition (Graphics g) {
+        // Fade to black
+        if (transAlpha < 255 && !passedBlack) {
+            transAlpha += 15;
+        } else {
+
+            // Wait one second if screen is black
+            if (transAlpha == 255) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Fade to not black
+            passedBlack = true;
+            transAlpha -= 15;
+
+            // Transition is finished
+            if (transAlpha == 0) {
+                transition = false;
+                passedBlack = false;
+            }
+        }
+
+        // Small delay while fading
+        try {
+            Thread.sleep(27);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Draw the black overlay
+        g.setColor(new Color(0, 0, 0, transAlpha));
+        g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+    }
+
+    /**
+     * Draws the player.
+     * @param g Used to draw the player.
+     */
     private void drawPlayer (Graphics g) {
-        int x = 0;
-        int y = 0;
-        int w = 0;
-        int h = 0;
-        Image img = null;
+        int x;
+        int y;
+        int w;
+        int h;
+        Image img;
+
+        // Find direction player is facing
         int direction = RIGHT;
         if (player.getDirection().equals("left")) {
             direction = LEFT;
         }
+
+        // Checks if the player is holding a crate or not
         int holdCrate = NOT_HOLD_CRATE;
         if (player.isHoldingCrate()) {
             holdCrate = HOLD_CRATE;
         }
+
+        // Jumping player
         if (!player.isOnGround()) {
             w = MainFrame.gridScreenRatio;
             h = MainFrame.gridScreenRatio;
             y = (int)player.getHitbox().getY();
+            x = (int)player.getHitbox().getX();
+
+            // Adjust width of the image if player is holding a crate
             if (player.isHoldingCrate()) {
                 w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                if (player.getDirection().equals("left")) {
+
+                // Adjust x position of image if player is facing left
+                if (direction == LEFT) {
                     x -= MainFrame.gridScreenRatio;
                 }
             }
-            x += (int)(player.getHitbox().getX());
+
+            // Get the image
             img = jump[holdCrate][direction];
 
+        // If the player is holding left or right
         } else if (player.isHoldLeft() || player.isHoldRight()) {
             h = MainFrame.gridScreenRatio;
             y = (int) player.getHitbox().getY();
             w = (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+            x = (int)player.getHitbox().getX();
+
+            // Adjust width if player is holding crate
             if (player.isHoldingCrate()) {
                 w += MainFrame.gridScreenRatio;
-                if (player.getDirection().equals("left")) {
+
+                // Adjust x position if player is facing left
+                if (direction == LEFT) {
                     x -= MainFrame.gridScreenRatio;
                 }
             }
-            x += (int)(player.getHitbox().getX());
+
+            // Set frame number to 0 if it's past the past frame of run animation
             if (player.getFrame() >= run[0][0].length - 1) {
                 player.setFrame(0);
             }
+
+            // Gets the iamge
             img = run[holdCrate][direction][player.getFrame()];
+
+        // If the player is sliding
         }  else if ((player.getAcc().getX() > 0 && player.getVel().getX() < 0) || (player.getAcc().getX() < 0 && player.getVel().getX() > 0)){
             w = MainFrame.gridScreenRatio;
             h = MainFrame.gridScreenRatio;
             y = (int)player.getHitbox().getY();
+            x = 0;
+
+            // If player is holding crate, adjust the width
             if (player.isHoldingCrate()) {
                 w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                if (player.getDirection().equals("left")) {
+
+                // Adjust x position if player is facing left
+                if (direction == LEFT) {
                     x -= MainFrame.gridScreenRatio;
                 }
+
+            // Adjust y position and height if player isn't holding crate
             } else {
                 h /= 2;
                 y += h;
             }
             x += (int)(player.getHitbox().getX());
+
+            // Get image
             img = slide[holdCrate][direction];
+
+        // If player is standing stll
         }else {
             w = MainFrame.gridScreenRatio;
             h = MainFrame.gridScreenRatio;
             y = (int)player.getHitbox().getY();
+            x = (int)player.getHitbox().getX();
+
+            // Adjust the width if player is holding crate
             if (player.isHoldingCrate()) {
                 w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
-                if (player.getDirection().equals("left")) {
+
+                // Adjust x position if player is facing left
+                if (direction == LEFT) {
                     x -= MainFrame.gridScreenRatio;
                 }
             } else {
+
+                // Change direction if player isn't holding a crate
                 direction = FACE_FORWARD;
 
             }
-            x += (int)(player.getHitbox().getX());
+
+            // Set frame number to 0 of it's greater than the last frame
             if (player.getFrame() >= (stand[0].length * 2) - 1) {
                 player.setFrame(0);
             }
+
+            // Gets the image
             img = stand[direction][player.getFrame() / 2];
         }
+
+        // Draw the player image on the screen
         g.drawImage(img, x, y, w, h, null);
     }
 
+    /**
+     * Draws the menu.
+     * @param g Used to draw.
+     */
     private void drawMenu (Graphics g) {
         g.setColor(Color.white);
         g.drawRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
@@ -278,38 +363,45 @@ public class GamePanel extends JPanel {
         g.drawString("PlAy", (int)game.getPlayHitbox().getX() + 75, (int)game.getPlayHitbox().getY() + (int)(game.getPlayHitbox().getHeight() / 1.5));
     }
 
+    /**
+     * Draw the terrain.
+     * @param g Used to help draw the terrain.
+     */
     private void drawTerrain(Graphics g) {
+        // Gets the terrain from the current level
         Terrain[][] terrain = currentLevel.getTerrain();
+
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
-
+                // Draw exit
                 if (terrain[i][j] instanceof Exit) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
-                    //System.out.println(hitBox.getX() + " " + hitBox.getY());
                     g.setColor(Color.BLACK);
                     g.fillRect((int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight());
                     g.setColor(Color.BLACK);
+
+                // Draw door
                 } else if (terrain[i][j] instanceof Door) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
                     g.drawImage(door[0], (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
+
+                    // Draw wall
                 } else if (terrain[i][j] instanceof Wall) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
                     g.drawImage(wall, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
                 }
             }
         }
-        g.setColor(Color.LIGHT_GRAY);
+
+        // Draw crates
         for (int i = 0; i < currentLevel.getCrates().size(); i++) {
             Rectangle hitbox = currentLevel.getCrates().get(i).getHitbox();
             if (currentLevel.getCrates().get(i) != player.getHeldCrate()) {
                 g.drawImage(crate, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
             }
-            if (currentLevel.getCrates().get(i).isReverse()) {
-                g.setColor(Color.BLACK);
-                g.drawString ("Rewiinndd",(int)(hitbox.getX()+ hitbox.getWidth() / 4), (int)(hitbox.getY() + hitbox.getHeight() / 2));
-            }
         }
 
+        // Draw keys
         for (int i = 0; i < player.getKeys().size(); i++) {
             if (!player.getKeys().get(i).isPickedUp()) {
                 Rectangle hitbox = player.getKeys().get(i).getHitbox();

@@ -1,5 +1,10 @@
-import java.awt.*;
+import java.awt.Rectangle;
 
+/**
+ * GameThread
+ * Main game loop
+ * @author Bryan Zhang
+ */
 public class GameThread implements Runnable {
     private int level;
     private Level currentLevel;
@@ -8,67 +13,125 @@ public class GameThread implements Runnable {
     private boolean menu;
     private Rectangle playHitbox;
     private boolean restartLevel;
-    MyArrayList<Pew> pews;
+    private boolean running;
 
+    /**
+     * Creates the game thread.
+     * @param player Reference to player.
+     */
     public GameThread (Player player) {
         level = 1;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
         fps = 0;
-        pews = new MyArrayList<Pew>();
         menu = true;
+        running = true;
         playHitbox = new Rectangle (550, 500, 250, 100);
     }
 
+    /**
+     * Gets the player object.
+     * @return The player.
+     */
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * Gets the current level.
+     * @return A Level that's the current level.
+     */
     public Level getCurrentLevel() {
         return currentLevel;
     }
 
+    /**
+     * Gets the fps of the game.
+     * @return An integer representing the fps.
+     */
     public int getFps() {
         return fps;
     }
 
+    /**
+     * Checks if the menu is being shown.
+     * @return A boolean that represents if the menu is being shown.
+     */
     public boolean isMenu() {
         return menu;
     }
 
+    /**
+     * Sets the boolean that represents if the menu is being shown.
+     * @param menu A boolean that represents if the menu is being shown.
+     */
     public void setMenu(boolean menu) {
         this.menu = menu;
     }
 
+    /**
+     * Gets the hitbox of the play button on the menu.
+     * @return A Rectangle that represents the hitbox of the play button.
+     */
     public Rectangle getPlayHitbox() {
         return playHitbox;
     }
 
+    /**
+     * Checks if the level is being restarted.
+     * @return A boolean that represents if the level is being restarted.
+     */
     public boolean isRestartLevel() {
         return restartLevel;
     }
+
+    /**
+     * Sets the boolean that represents if the level is being restarted.
+     * @param restartLevel A boolean that represents if the level is being restarted.
+     */
     public void setRestartLevel(boolean restartLevel) {
         this.restartLevel = restartLevel;
     }
 
+    /**
+     * Sets the boolean that represents if the game loop should be running.
+     * @param running A boolean that represents if the game loop should be running.
+     */
+    public void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    /**
+     * Starts the main game loop
+     */
     public void run() {
-        while (true) {
-            //TODO: Game loop
+        while (running) {
+            // Gets the current time
             double time = System.nanoTime()/1000000000.0;
+
+            // Delay between frames
             try {
                 Thread.sleep(27);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            // Run game if its not menu
             if (!menu) {
+                // If player is not reversing time
                 if (!player.isReversing()) {
+
+                    // Update player
                     player.update();
+
+                    // Update crates
                     for (int i = 0; i < currentLevel.getCrates().size(); i++) {
                         currentLevel.getCrates().get(i).update();
                     }
+
+                    // Check if level is finished or player is dead or level is restarted
                     if (currentLevel.isLevelFinished()) {
-                        //pews.add(new Pew(new Color((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256)), new Font("Arial", (int) (Math.random() * 3), (int) (Math.random() * 50) + 5), (int) (Math.random() * MainFrame.WIDTH), (int) (Math.random() * MainFrame.HEIGHT)));
                         level++;
                         currentLevel.startLevel(player, level);
                         currentLevel.setLevelFinished(false);
@@ -77,30 +140,44 @@ public class GameThread implements Runnable {
                         currentLevel.startLevel(player, level);
                         setRestartLevel(false);
                     }
+
+                // If player is reversing time
                 } else {
+
+                    // Find what is being reversed
                     boolean foundReverse = false;
                     MyArrayList<Crate> crates = currentLevel.getCrates();
                     for (int i = 0; i < crates.size() && !foundReverse; i++) {
-                        if (crates.get(i).isReverse() && !crates.get(i).getObjectQueue().isEmpty()) {
+                        // Check if current crate is being reversed and there is a previous state to revert to
+                        if (crates.get(i).isReverse() && !crates.get(i).getPreviousStateQueue().isEmpty()) {
+
+                            // If reversed crate is picked up by player, place it down
                             if (crates.get(i).isPickedUp()) {
                                 crates.get(i).setPickedUp(false);
                                 player.placeDownCrate();
                             }
-                            crates.set(i, crates.get(i).getObjectQueue().pollLast());
+
+                            // Get previous state of crate and set it to current crate
+                            crates.set(i, crates.get(i).getPreviousStateQueue().pollLast());
+
                             foundReverse = true;
+
+                        // If the previous states queue is empty, stop reverse
                         } else if (crates.get(i).isReverse()) {
                             crates.get(i).setReverse(false);
                             player.setReversing(false);
                         }
                     }
 
+                    // Check if player is reversing them self
                     if (player.isReverse() && !foundReverse) {
-                        if (!player.getObjectQueue().isEmpty()) {
+                        if (!player.getPreviousStateQueue().isEmpty()) {
                             if (player.getHeldCrate() != null) {
                                 player.placeDownCrate();
                             }
-                            player.clone(player.getObjectQueue().pollLast());
-                            foundReverse = true;
+                            player.clone(player.getPreviousStateQueue().pollLast());
+
+                        // Stop reverse if previous states queue if empty
                         } else {
                             player.setReverse(false);
                             player.setReversing(false);
@@ -108,6 +185,8 @@ public class GameThread implements Runnable {
                     }
                 }
             }
+
+            // Calculate fps based on how long it took to run through one iteration of loop
             fps = (int)(1 / (System.nanoTime()/1000000000.0 - time));
         }
     }

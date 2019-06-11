@@ -1,5 +1,10 @@
-import java.awt.*;
+import java.awt.Rectangle;
 
+/**
+ * Exit
+ * Class that represents a door.
+ * @author Bryan Zhang
+ */
 public class Exit extends Terrain {
   private Level currentLevel;
   public Exit (int x, int y) {

@@ -17,7 +17,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
     private Terrain[][] terrain;
     private MyArrayList<Crate> crates;
     private boolean reverse;
-    private MyQueue<Crate> objectQueue;
+    private MyQueue<Crate> previousStateQueue;
     private static double FRICTION_ACC_RATIO = 0.017;
 
     /**
@@ -38,7 +38,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         onGround = false;
         pickedUp = false;
         reverse = false;
-        objectQueue = new MyQueue<Crate>();
+        previousStateQueue = new MyQueue<Crate>();
         this.terrain = terrain;
         this.crates = crates;
         this.player = player;
@@ -62,7 +62,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         reverse = true;
         pickedUp = false;
         onGround = false;
-        objectQueue = new MyQueue<Crate>(crate.getObjectQueue());
+        previousStateQueue = new MyQueue<Crate>(crate.getPreviousStateQueue());
     }
 
     /**
@@ -138,8 +138,8 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
      * @return The object queue.
      */
     @Override
-    public MyQueue<Crate> getObjectQueue() {
-        return objectQueue;
+    public MyQueue<Crate> getPreviousStateQueue() {
+        return previousStateQueue;
     }
 
     /**
@@ -180,8 +180,8 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
     @Override
     public void update() {
         // Save state of current crate for possible rewind later
-        if (!isReverse() && (getObjectQueue().isEmpty() || !equals(getObjectQueue().getLast()))) {
-            objectQueue.add(new Crate(this));
+        if (!(isReverse()) && ((getPreviousStateQueue().isEmpty()) || !(equals(getPreviousStateQueue().getLast())))) {
+            previousStateQueue.add(new Crate(this));
         }
 
         // If crate is picked up, follow player
@@ -302,9 +302,11 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
             for (int j = 0; j < terrain[0].length; j++) {
 
                 // Only check collision if the terrain is a wall and not a door, or is an unlocked door
-                if ((terrain[i][j] instanceof Wall && !(terrain[i][j] instanceof Door)) || (terrain[i][j] instanceof Door && !((Door)terrain[i][j]).isUnlocked())) {
-                    collided = !((Wall) (terrain[i][j])).collide(getHitbox());
-                    if (!collided) {
+                boolean lockedDoor = (terrain[i][j] instanceof Door) && !((Door)terrain[i][j]).isUnlocked();
+                boolean wall = (terrain[i][j] instanceof Wall) && !(terrain[i][j] instanceof Door);
+                if (wall || lockedDoor) {
+                    collided = ((Wall) (terrain[i][j])).collide(getHitbox());
+                    if (collided) {
                         return true;
                     }
                 }
@@ -316,8 +318,8 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
 
             // Make sure crate doesn't check collision with itself
             if (crates.get(i) != this) {
-                collided = !crates.get(i).collide(getHitbox());
-                if (!collided) {
+                collided = crates.get(i).collide(getHitbox());
+                if (collided) {
                     return true;
                 }
             }

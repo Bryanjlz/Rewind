@@ -1,5 +1,10 @@
-import java.awt.*;
+import java.awt.Rectangle;
 
+/**
+ * Door
+ * Class that represents a door.
+ * @author Bryan Zhang
+ */
 public class Door extends Wall {
     private int id;
     private boolean unlocked;
@@ -31,10 +36,7 @@ public class Door extends Wall {
     }
 
     public boolean collide(Rectangle pBox) {
-        if (pBox.intersects(getHitbox())) {
-            return true;
-        }
-        return false;
+        return pBox.intersects(getHitbox());
     }
 }
 
