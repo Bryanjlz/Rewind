@@ -30,6 +30,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private boolean isReversing;
     private MyQueue<Player> previousStateQueue;
     private int frame;
+    private double jumpStartTime;
     static double SIDE_WIDTH_RATIO = 50.0 / 120.0;
     static final double GRAVITY_RATIO = 0.03;
     static final double X_MAX_VEL_RATIO = 0.15;
@@ -384,6 +385,10 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         return airMoveAcc;
     }
 
+    public void setJumpStartTime(double jumpStartTime) {
+        this.jumpStartTime = jumpStartTime;
+    }
+
     /**
      * Sets the ArrayList of keys that player holds.
      * @param keys The ArrayList of keys.
@@ -618,8 +623,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
      * Changes the y velocity of the player to emulate a jump.
      */
     private void jump() {
-        if (onGround) {
-            vel.setY(-yMaxVel);
+        if (System.nanoTime() / 1000000000.0 - jumpStartTime < 0.12) {
+            vel.setY(-35);
         }
     }
 

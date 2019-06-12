@@ -16,7 +16,7 @@ public class Key extends Terrain {
      * @param id The ID of the key, which matches a door.
      */
     public Key(int x, int y, int id) {
-        super(x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
+        super(x, y);
         this.id = id;
         pickedUp = false;
     }

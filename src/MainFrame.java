@@ -91,7 +91,8 @@ public class MainFrame extends JFrame {
                 // Jump
                 case KeyEvent.VK_W:
                     // Allow key pressed if player is not reversing
-                    if (!player.isReversing()) {
+                    if (!player.isReversing() && player.isOnGround()) {
+                        player.setJumpStartTime(System.nanoTime() / 1000000000.0);
                         player.setHoldUp(true);
                     }
                     break;
