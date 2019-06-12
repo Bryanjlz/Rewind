@@ -1,4 +1,4 @@
-import java.awt.*;
+import java.awt.Point;
 import java.io.File;
 import java.util.Scanner;
 

@@ -18,7 +18,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
     private MyArrayList<Crate> crates;
     private boolean reverse;
     private MyQueue<Crate> previousStateQueue;
-    private static double FRICTION_ACC_RATIO = 0.017;
+    private static double FRICTION_ACC_RATIO = 2.04 / 120.0;
 
     /**
      * Creates a crate object.

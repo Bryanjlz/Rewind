@@ -32,11 +32,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private int frame;
     private double jumpStartTime;
     static double SIDE_WIDTH_RATIO = 50.0 / 120.0;
-    static final double GRAVITY_RATIO = 0.03;
-    private static final double X_MAX_VEL_RATIO = 0.15;
-    static final double Y_MAX_VEL_RATIO = 0.38;
-    static final double RUN_ACC_RATIO = 0.02;
-    private static final double AIR_MOVE_ACC_RATIO = 0.005;
+    static final double GRAVITY_RATIO = 3.6 / 120.0;
+    private static final double X_MAX_VEL_RATIO = 18 / 120.0;
+    static final double Y_MAX_VEL_RATIO = 45.6 / 120.0;
+    static final double RUN_ACC_RATIO = 2.4 / 120.0;
+    private static final double AIR_MOVE_ACC_RATIO = 0.6 / 120.0;
     private static final double JUMP_RATIO = 35 / 120.0;
 
     /**
