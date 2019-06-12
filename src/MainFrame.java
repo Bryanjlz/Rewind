@@ -364,6 +364,8 @@ public class MainFrame extends JFrame {
                 if (!foundReverse && player.isReverse()) {
 
                     // Set player to not be reversed
+                    player.setHoldLeft(false);
+                    player.setHoldRight(false);
                     player.setReverse(false);
                     boolean foundCollide = false;
 

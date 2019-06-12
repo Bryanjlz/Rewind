@@ -70,10 +70,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         acc = new MyVector(player.getAcc());
         isHoldingCrate = false;
         heldCrate = null;
-        onGround = false;
+        onGround = player.isOnGround();
         direction = player.getDirection();
         terrain = player.getTerrain();
         crates = player.getCrates();
+        holdLeft = player.isHoldLeft();
+        holdRight = player.isHoldRight();
         isReverse = true;
         isReversing = true;
         previousStateQueue = new MyQueue<Player>(player.getPreviousStateQueue());
@@ -99,10 +101,12 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         acc = player.getAcc();
         isHoldingCrate = player.isHoldingCrate();
         heldCrate = player.getHeldCrate();
-        onGround = false;
+        onGround = player.isOnGround();
         direction = player.getDirection();
         terrain = player.getTerrain();
         crates = player.getCrates();
+        holdLeft = player.isHoldLeft();
+        holdRight = player.isHoldRight();
         isReverse = player.isReverse();
         isReversing = player.isReversing();
         previousStateQueue = player.getPreviousStateQueue();

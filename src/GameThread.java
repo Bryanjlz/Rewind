@@ -14,20 +14,28 @@ public class GameThread implements Runnable {
     private Rectangle playHitbox;
     private boolean restartLevel;
     private boolean running;
+    private static final double PLAY_HITBOX_WIDTH_RATIO = 600 / 1920.0;
+    private static final double PLAY_HITBOX_X_RATIO =  660 / 1920.0;
+    private static final double PLAY_HITBOX_HEIGHT_RATIO = 250 / 1080.0;
+    private static final double PLAY_HITBOX_Y_RATIO = 615.55 / 1080.0;
 
     /**
      * Creates the game thread.
      * @param player Reference to player.
      */
     public GameThread (Player player) {
-        level = 1;
+        level = 3;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
         fps = 0;
         menu = true;
         running = true;
-        playHitbox = new Rectangle (550, 500, 250, 100);
+        int boxX = (int)(PLAY_HITBOX_X_RATIO * MainFrame.WIDTH);
+        int boxY = (int)(PLAY_HITBOX_Y_RATIO * MainFrame.HEIGHT);
+        int boxW = (int)(PLAY_HITBOX_WIDTH_RATIO * MainFrame.WIDTH);
+        int boxH = (int)(PLAY_HITBOX_HEIGHT_RATIO * MainFrame.HEIGHT);
+        playHitbox = new Rectangle (boxX, boxY, boxW, boxH);
     }
 
     /**
@@ -179,6 +187,8 @@ public class GameThread implements Runnable {
 
                         // Stop reverse if previous states queue if empty
                         } else {
+                            player.setHoldLeft(false);
+                            player.setHoldRight(false);
                             player.setReverse(false);
                             player.setReversing(false);
                         }

@@ -17,6 +17,7 @@ public class GamePanel extends JPanel {
     private GameThread game;
     private Player player;
     private Level currentLevel;
+    private int menuFrame = 0;
     private boolean transition;
     private double timeAlpha;
     private int transAlpha;
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel {
     private BufferedImage key;
     private BufferedImage crate;
     private BufferedImage[] door;
+    private BufferedImage[] menu;
 
     /**
      * Creates the panel.
@@ -56,6 +58,7 @@ public class GamePanel extends JPanel {
         slide = new BufferedImage[2][2];
         jump = new BufferedImage[2][2];
         door = new BufferedImage[2];
+        menu = new BufferedImage[18];
         loadImages();
     }
 
@@ -71,6 +74,16 @@ public class GamePanel extends JPanel {
      * Loads the images that are required for the game.
      */
     private void loadImages() {
+        // Load menu images
+        for (int i = 0; i < menu.length; i++) {
+            File file = new File ("assets/images/menu/menu" + (i + 1) + ".png");
+            try {
+                menu[i] = ImageIO.read(file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         // Load player run images
         for (int i = 0; i < run.length; i++) {
             for (int j = 0; j < run[0].length; j++) {
@@ -270,14 +283,14 @@ public class GamePanel extends JPanel {
 
         // Jumping player
         if (!player.isOnGround()) {
-            w = MainFrame.gridScreenRatio;
+            w = (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
             h = MainFrame.gridScreenRatio;
             y = (int)player.getHitbox().getY();
             x = (int)player.getHitbox().getX();
 
             // Adjust width of the image if player is holding a crate
             if (player.isHoldingCrate()) {
-                w += (int)(Player.SIDE_WIDTH_RATIO * MainFrame.gridScreenRatio);
+                w += MainFrame.gridScreenRatio;
 
                 // Adjust x position of image if player is facing left
                 if (direction == LEFT) {
@@ -379,14 +392,16 @@ public class GamePanel extends JPanel {
      * @param g Used to draw.
      */
     private void drawMenu (Graphics g) {
-        g.setColor(Color.white);
-        g.drawRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
-        g.setFont(new Font("Arial", Font.PLAIN, 130));
-        g.setColor(Color.black);
-        g.drawString("iT's ReWInd tIMe!!1!", 100, 350);
-        g.drawRect((int)game.getPlayHitbox().getX(), (int)game.getPlayHitbox().getY(), (int)game.getPlayHitbox().getWidth(), (int)game.getPlayHitbox().getHeight());
-        g.setFont(new Font("Arial", Font.PLAIN, 50));
-        g.drawString("PlAy", (int)game.getPlayHitbox().getX() + 75, (int)game.getPlayHitbox().getY() + (int)(game.getPlayHitbox().getHeight() / 1.5));
+        if (menuFrame > menu.length- 1) {
+            menuFrame = 0;
+        }
+        try {
+            Thread.sleep(30);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        g.drawImage(menu[menuFrame], 0, 0, MainFrame.WIDTH, MainFrame.HEIGHT, null);
+        menuFrame++;
     }
 
     /**
@@ -409,7 +424,11 @@ public class GamePanel extends JPanel {
                 // Draw door
                 } else if (terrain[i][j] instanceof Door) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
-                    g.drawImage(door[0], (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
+                    Image img = door[0];
+                    if (((Door)terrain[i][j]).isUnlocked()) {
+                        img = door[1];
+                    }
+                    g.drawImage(img, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
 
                     // Draw wall
                 } else if (terrain[i][j] instanceof Wall) {
