@@ -18,8 +18,12 @@ public class GamePanel extends JPanel {
     private Player player;
     private Level currentLevel;
     private boolean transition;
+    private double timeAlpha;
     private int transAlpha;
     private boolean passedBlack;
+    private static final int ALPHA_CHANGE = 15;
+    private static final Color PURPLE = new Color(173, 102, 249);
+    private static final Color BLACK = Color.BLACK;
     private static final int NOT_HOLD_CRATE = 0;
     private static final int HOLD_CRATE = 1;
     private static final int RIGHT = 0;
@@ -166,6 +170,9 @@ public class GamePanel extends JPanel {
             if (player.isDead() || currentLevel.isLevelFinished()) {
                 transition = true;
             }
+
+            // Time rewind overlay
+            drawTimeOverlay(g);
         }
 
         // Run transition
@@ -178,13 +185,30 @@ public class GamePanel extends JPanel {
     }
 
     /**
+     * Draws purple overlay when player is reversing time.
+     * @param g Used to draw overlay.
+     */
+    private void drawTimeOverlay (Graphics g) {
+        if (timeAlpha < 75 && player.isReversing()) {
+            timeAlpha += 0.2;
+        } else if (timeAlpha > 0 && !player.isReversing()) {
+            timeAlpha -= 0.2;
+        }
+
+        if (timeAlpha != 0) {
+            g.setColor(new Color (PURPLE.getRed(), PURPLE.getGreen(), PURPLE.getBlue(), (int)timeAlpha));
+            g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+        }
+    }
+
+    /**
      * Draw the transition
      * @param g Used to draw graphics.
      */
     private void drawTransition (Graphics g) {
         // Fade to black
         if (transAlpha < 255 && !passedBlack) {
-            transAlpha += 15;
+            transAlpha += ALPHA_CHANGE;
         } else {
 
             // Wait one second if screen is black
@@ -198,7 +222,7 @@ public class GamePanel extends JPanel {
 
             // Fade to not black
             passedBlack = true;
-            transAlpha -= 15;
+            transAlpha -= ALPHA_CHANGE;
 
             // Transition is finished
             if (transAlpha == 0) {
@@ -215,8 +239,10 @@ public class GamePanel extends JPanel {
         }
 
         // Draw the black overlay
-        g.setColor(new Color(0, 0, 0, transAlpha));
-        g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+        if (transAlpha != 0) {
+            g.setColor(new Color(BLACK.getRed(), BLACK.getGreen(), BLACK.getBlue(), transAlpha));
+            g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+        }
     }
 
     /**

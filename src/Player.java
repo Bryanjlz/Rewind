@@ -33,10 +33,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private double jumpStartTime;
     static double SIDE_WIDTH_RATIO = 50.0 / 120.0;
     static final double GRAVITY_RATIO = 0.03;
-    static final double X_MAX_VEL_RATIO = 0.15;
+    private static final double X_MAX_VEL_RATIO = 0.15;
     static final double Y_MAX_VEL_RATIO = 0.38;
     static final double RUN_ACC_RATIO = 0.02;
-    static final double AIR_MOVE_ACC_RATIO = 0.005;
+    private static final double AIR_MOVE_ACC_RATIO = 0.005;
+    private static final double JUMP_RATIO = 35 / 120.0;
 
     /**
      * Creates a player.
@@ -623,8 +624,8 @@ public class Player implements Movable, Updatable, Reversable<Player> {
      * Changes the y velocity of the player to emulate a jump.
      */
     private void jump() {
-        if (System.nanoTime() / 1000000000.0 - jumpStartTime < 0.12) {
-            vel.setY(-35);
+        if (System.nanoTime() / 1000000000.0 - jumpStartTime < 0.14) {
+            vel.setY(-JUMP_RATIO * MainFrame.gridScreenRatio);
         }
     }
 
