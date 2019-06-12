@@ -152,7 +152,7 @@ public class GamePanel extends JPanel {
         } else {
 
             // Draw Background
-            g.setColor(Color.pink);
+            g.setColor(Color.GRAY);
             g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
 
             drawPlayer(g);

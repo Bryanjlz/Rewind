@@ -1,4 +1,4 @@
-import java.awt.*;
+import java.awt.Rectangle;
 
 public class MovingWall extends Terrain implements Movable {
     private MyVector vel;
