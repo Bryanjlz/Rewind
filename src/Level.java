@@ -71,6 +71,7 @@ public class Level {
             // Initialize terrain
             terrain = new Terrain[terrainHeight][terrainWidth];
             crates = new MyArrayList<>();
+            keys.clear();
             for (int i = 0; i < terrainHeight; i++) {
                 for (int j = 0; j < terrainWidth; j++) {
                     String terrainString = fileReader.next();

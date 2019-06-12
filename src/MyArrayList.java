@@ -78,6 +78,11 @@ public class MyArrayList<T> {
     temp.setItem(item);
   }
 
+  public void clear () {
+    head = null;
+    size = 0;
+  }
+
   /**
    * Node
    * Inner class node, used to store the items and form ArrayList.

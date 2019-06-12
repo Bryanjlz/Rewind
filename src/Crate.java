@@ -62,7 +62,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         reverse = true;
         pickedUp = false;
         onGround = false;
-        previousStateQueue = new MyQueue<Crate>(crate.getPreviousStateQueue());
+        previousStateQueue = crate.getPreviousStateQueue();
     }
 
     /**
@@ -182,6 +182,9 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         // Save state of current crate for possible rewind later
         if (!(isReverse()) && ((getPreviousStateQueue().isEmpty()) || !(equals(getPreviousStateQueue().getLast())))) {
             previousStateQueue.add(new Crate(this));
+            if (previousStateQueue.size() > Player.MAX_PREVIOUS_STATES) {
+                previousStateQueue.poll();
+            }
         }
 
         // If crate is picked up, follow player

@@ -17,24 +17,6 @@ public class Wall extends Terrain {
     }
 
     /**
-     * Gets the hitbox of the wall.
-     * @return The hitbox.
-     */
-    @Override
-    public Rectangle getHitbox() {
-        return super.getHitbox();
-    }
-
-    /**
-     * Sets the hitbox of the wall.
-     * @param hitBox The hitbox.
-     */
-    @Override
-    public void setHitbox(Rectangle hitBox) {
-        super.setHitbox(hitBox);
-    }
-
-    /**
      * Checks collision with a specified hitbox.
      * @param hitbox The hitbox to check collision with.
      * @return A boolean that represents if the two are touching.

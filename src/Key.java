@@ -32,24 +32,6 @@ public class Key extends Terrain {
     }
 
     /**
-     * Gets the hitbox of the key.
-     * @return The Rectangle hitbox of the key.
-     */
-    @Override
-    public Rectangle getHitbox() {
-        return super.getHitbox();
-    }
-
-    /**
-     * Sets the hitbox of the key.
-     * @param hitBox The Rectangle hitbox of the key.
-     */
-    @Override
-    public void setHitbox(Rectangle hitBox) {
-        super.setHitbox(hitBox);
-    }
-
-    /**
      * Gets the ID of the key.
      * @return The int ID of the key.
      */

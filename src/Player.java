@@ -31,6 +31,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private MyQueue<Player> previousStateQueue;
     private int frame;
     private double jumpStartTime;
+    static final int MAX_PREVIOUS_STATES = 255;
     static double SIDE_WIDTH_RATIO = 50.0 / 120.0;
     static final double GRAVITY_RATIO = 3.6 / 120.0;
     private static final double X_MAX_VEL_RATIO = 18 / 120.0;
@@ -78,7 +79,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         holdRight = player.isHoldRight();
         isReverse = true;
         isReversing = true;
-        previousStateQueue = new MyQueue<Player>(player.getPreviousStateQueue());
+        previousStateQueue = player.getPreviousStateQueue();
         keys = new MyArrayList<Key>();
         for (int i = 0; i < player.getKeys().size(); i++) {
             keys.add(new Key(player.getKeys().get(i)));
@@ -541,6 +542,9 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             // Add current state to queue
             if (getPreviousStateQueue().isEmpty() || !equals(getPreviousStateQueue().getLast())) {
                 getPreviousStateQueue().add(new Player(this));
+                if (getPreviousStateQueue().size() > MAX_PREVIOUS_STATES) {
+                    getPreviousStateQueue().poll();
+                }
             }
         } else {
 

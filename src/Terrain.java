@@ -24,10 +24,18 @@ abstract class Terrain {
         this.hitbox = new Rectangle(x, y, MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
     }
 
+    /**
+     * Gets the hitbox of the wall.
+     * @return The hitbox.
+     */
     public Rectangle getHitbox() {
         return hitbox;
     }
 
+    /**
+     * Sets the hitbox of the wall.
+     * @param hitbox The hitbox.
+     */
     public void setHitbox(Rectangle hitbox) {
         this.hitbox = hitbox;
     }

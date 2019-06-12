@@ -7,6 +7,7 @@
 public class MyQueue<T> {
   private Node<T> head;
   private Node<T> tail;
+  private int size;
 
   /**
    * Constructor for an empty queue.
@@ -31,7 +32,7 @@ public class MyQueue<T> {
         oriTemp = oriTemp.getNext();
         copyTemp = copyTemp.getNext();
       }
-
+      size = queue.size();
       // Set tail to last item
       tail = copyTemp;
     }
@@ -43,13 +44,14 @@ public class MyQueue<T> {
    */
   public void add (T item) {
     if (head == null) {
-      head = new Node(item);
+      head = new Node<T>(item);
       tail = head;
     } else {
-      tail.setNext(new Node(item, tail));
+      tail.setNext(new Node<T>(item, tail));
       tail = tail.getNext();
       tail.getPrev().setNext(tail);
     }
+    size++;
   }
 
   /**
@@ -64,6 +66,7 @@ public class MyQueue<T> {
     } else {
       head.setPrev(null);
     }
+    size--;
     return item;
   }
 
@@ -79,6 +82,7 @@ public class MyQueue<T> {
     } else {
       tail.setNext(null);
     }
+    size--;
     return item;
   }
 
@@ -91,6 +95,10 @@ public class MyQueue<T> {
       return true;
     }
     return false;
+  }
+
+  public int size () {
+    return size;
   }
 
   /**
@@ -130,9 +138,9 @@ public class MyQueue<T> {
     }
 
     /**
-     * Constructor to create a node with the specified item and the previous node
-     * @param item
-     * @param prev
+     * Constructor to create a node with the specified item and the previous node.
+     * @param item Item to store in node.
+     * @param prev Previous node.
      */
     private Node(T item, Node<T> prev) {
       this.item = item;

@@ -1,9 +1,12 @@
 import java.awt.Rectangle;
 
-public class MovingWall extends Terrain implements Movable {
+/**
+ *
+ */
+public class MovingWall extends Wall implements Movable, Updatable {
     private MyVector vel;
-    public MovingWall () {
-        super();
+    public MovingWall (int x, int y) {
+        super(x, y);
         vel = new MyVector(0 ,0);
     }
 
@@ -18,16 +21,8 @@ public class MovingWall extends Terrain implements Movable {
     }
 
     @Override
-    public Rectangle getHitbox() {
-        return super.getHitbox();
+    public void update() {
+
     }
 
-    @Override
-    public void setHitbox(Rectangle hitBox) {
-        super.setHitbox(hitBox);
-    }
-
-    public void collide() {
-        //TODO: collision
-    }
 }

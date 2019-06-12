@@ -1,12 +1,9 @@
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+import java.awt.*;
 import java.io.File;
 
-import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
 
 /**
  * GamePanel
@@ -171,7 +168,49 @@ public class GamePanel extends JPanel {
             g.setColor(Color.GRAY);
             g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
 
-            drawPlayer(g);
+            // Draw player previous state trail
+            MyQueue<Player> playerQueue = new MyQueue<Player>(player.getPreviousStateQueue());
+            Graphics2D g2D = (Graphics2D)g;
+            int queueSize = playerQueue.size();
+
+            if (player.isReverse() && (player.isReversing())) {
+                for (int i = 0; i < queueSize; i++) {
+                    // Change transparency for previous states of the player
+                    float alpha = (float) ((255 - i) / 500.0); //draw half transparent
+                    AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
+                    g2D.setComposite(ac);
+                    Player tempPlayer = playerQueue.pollLast();
+                    drawPlayer(g2D, tempPlayer);
+                }
+            }
+
+            if (!player.isReverse()) {
+                // Draw previous state trails for crates
+                MyArrayList<Crate> crates = currentLevel.getCrates();
+                for (int i = 0; i < crates.size(); i++) {
+                    if (crates.get(i).isReverse()) {
+                        MyQueue<Crate> crateQueue = new MyQueue<Crate>(crates.get(i).getPreviousStateQueue());
+                        queueSize = crateQueue.size();
+                        for (int j = 0; j < queueSize && !crateQueue.isEmpty(); j++) {
+                            // Change transparency for previous states of the crate
+                            float alpha = (float) ((255 - j) / 2000.0);
+                            AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
+                            g2D.setComposite(ac);
+                            Crate tempCrate = crateQueue.pollLast();
+                            Rectangle hitbox = tempCrate.getHitbox();
+                            g.drawImage(crate, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
+                        }
+                    }
+                }
+            }
+
+            // Set alpha back to 1
+            float alpha = (float)1;
+            AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,alpha);
+            g2D.setComposite(ac);
+
+
+            drawPlayer(g, player);
             drawTerrain(g);
 
             // Draw FPS
@@ -261,7 +300,7 @@ public class GamePanel extends JPanel {
      * Draws the player.
      * @param g Used to draw the player.
      */
-    private void drawPlayer (Graphics g) {
+    private void drawPlayer (Graphics g, Player player) {
         int x;
         int y;
         int w;

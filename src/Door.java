@@ -21,24 +21,6 @@ public class Door extends Wall {
     }
 
     /**
-     * Gets the hitbox.
-     * @return The Rectangle hitbox.
-     */
-    @Override
-    public Rectangle getHitbox() {
-        return super.getHitbox();
-    }
-
-    /**
-     * Sets the hitbox.
-     * @param hitBox The Rectangle hitbox.
-     */
-    @Override
-    public void setHitbox(Rectangle hitBox) {
-        super.setHitbox(hitBox);
-    }
-
-    /**
      * Gets the ID.
      * @return The int ID.
      */
