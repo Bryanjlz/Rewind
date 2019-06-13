@@ -2,6 +2,8 @@
  * Reversable
  * Interface that specifies an object can be reversed in time.
  * @param <T> The object that is being reversed.
+ * @author Bryan Zhang
+ * @since June 13/2019
  */
 public interface Reversable<T> {
   /**

@@ -17,6 +17,7 @@ import java.io.File;
  * MainFrame
  * Main JFrame of the game
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class MainFrame extends JFrame {
     private GameThread game;

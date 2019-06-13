@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * Button
  * Class that represents a button
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Button extends Terrain {
     private boolean isPressed;

@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * Wall
  * A class that represents a wall.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Wall extends Terrain {
 

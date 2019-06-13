@@ -5,6 +5,7 @@ import java.awt.Point;
  * Player
  * A class that holds a player.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Player implements Movable, Updatable, Reversable<Player> {
     private Rectangle hitbox;

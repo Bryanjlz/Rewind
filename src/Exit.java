@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * Exit
  * Class that represents a door.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Exit extends Terrain {
   private Level currentLevel;

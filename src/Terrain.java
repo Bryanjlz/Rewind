@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * Terrain
  * An abstract class that represents terrain, used with polymorphism to store the different types of terrain.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 abstract class Terrain {
     private Rectangle hitbox;

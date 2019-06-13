@@ -2,6 +2,7 @@
  * Movable
  * Interface that specifies an object can move (has velocity)
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public interface Movable {
 

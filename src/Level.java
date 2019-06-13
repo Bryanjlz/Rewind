@@ -6,6 +6,7 @@ import java.util.Scanner;
  * Level
  * A level for the game
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Level {
     private Terrain[][] terrain;

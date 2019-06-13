@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 /**
  * GamePanel
  * The JPanel for the game to display graphics.
+ * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class GamePanel extends JPanel {
     private GameThread game;

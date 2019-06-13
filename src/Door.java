@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * Door
  * Class that represents a door.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Door extends Wall {
     private int id;

@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * Key
  * Class that represents a key.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class Key extends Terrain {
     private int id;

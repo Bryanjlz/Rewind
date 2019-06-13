@@ -2,6 +2,7 @@
  * MyVector
  * Class that represent vectors.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class MyVector {
     private double x;

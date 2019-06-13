@@ -5,6 +5,7 @@ import java.awt.Point;
  * MovingWall
  * Class that represents moving walls.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class MovingWall extends Wall implements Movable, Updatable {
     private MyVector vel;

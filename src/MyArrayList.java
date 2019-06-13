@@ -3,6 +3,7 @@
  * An array list to hold objects.
  * @param <T> The type of element held in this collection.
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class MyArrayList<T> {
   private Node<T> head;

@@ -4,6 +4,7 @@ import java.awt.Rectangle;
  * GameThread
  * Main game loop
  * @author Bryan Zhang
+ * @since June 13/2019
  */
 public class GameThread implements Runnable {
     private int level;
@@ -26,7 +27,7 @@ public class GameThread implements Runnable {
      * @param player Reference to player.
      */
     public GameThread (Player player) {
-        level = 2;
+        level = 1;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
