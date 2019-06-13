@@ -13,6 +13,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.io.File;
 
+/**
+ * MainFrame
+ * Main JFrame of the game
+ * @author Bryan Zhang
+ */
 public class MainFrame extends JFrame {
     private GameThread game;
     private GamePanel panel;
@@ -54,7 +59,6 @@ public class MainFrame extends JFrame {
         this.setVisible(true);
 
         // Load and play background music in a loop
-        /*
         try {
             File music = new File("assets/sounds/bgm.wav");
             AudioInputStream sound = AudioSystem.getAudioInputStream(music);
@@ -64,7 +68,7 @@ public class MainFrame extends JFrame {
             bgm.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
+        }
 
 
     }

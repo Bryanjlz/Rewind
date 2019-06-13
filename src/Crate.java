@@ -280,6 +280,9 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         }
     }
 
+    /**
+     * Check collision with terrain (button).
+     */
     private void checkTerrainCollisions() {
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
@@ -344,15 +347,25 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         return collided;
     }
 
+    /**
+     * Collide with a certain hitbox, use boolen tryX to know whether the player is moving through x or y translation.
+     * @param hitbox The hitbox of the wall to collide with.
+     * @param tryX A boolean that represents if the player is trying x translation.
+     */
     private void wallCollide (Rectangle hitbox, boolean tryX) {
         int x = (int)getHitbox().getX();
         int y = (int)getHitbox().getY();
+
+        // If x translation
         if (tryX) {
+
             if (getVel().getX() > 0) {
                 x = (int)(hitbox.getX() - getHitbox().getWidth());
             } else {
                 x = (int)(hitbox.getX() + hitbox.getWidth());
             }
+
+        // If y translation
         } else {
             if (getVel().getY() > 0) {
                 y = (int)(hitbox.getY() - getHitbox().getWidth());

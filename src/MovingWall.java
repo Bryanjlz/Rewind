@@ -14,7 +14,16 @@ public class MovingWall extends Wall implements Movable, Updatable {
     private Button button;
     private Player player;
     private MyArrayList<Crate> crates;
-    private static final int SPEED_RATIO = 1;
+    private static final double SPEED_RATIO = 7 / 120.0;
+
+    /**
+     * Constructor to create a moving wall with specified location and ID.
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param id The ID.
+     * @param player Reference to player for collisions.
+     * @param crates Reference to crates for collosions.
+     */
     public MovingWall (int x, int y, int id, Player player, MyArrayList<Crate> crates) {
         super(x, y);
         vel = new MyVector(0 ,0);
@@ -24,57 +33,82 @@ public class MovingWall extends Wall implements Movable, Updatable {
         currentPointIndex = 0;
     }
 
+    /**
+     * Gets the velocity vector of the moving wall.
+     * @return The velocity vector.
+     */
     @Override
     public MyVector getVel() {
         return vel;
     }
 
+    /**
+     * Sets the velocity vector of the moving wall.
+     * @param vel The velocity vector.
+     */
     @Override
     public void setVel(MyVector vel) {
         this.vel = vel;
     }
 
+    /**
+     * Sets the path the moving wall walks on.
+     * @param path An array of Points that indicate path.
+     */
     public void setPath(Point[] path) {
         this.path = path;
     }
 
-    public Button getButton() {
-        return button;
-    }
-
+    /**
+     * Sets the button the wall has reference to.
+     * @param button The button.
+     */
     public void setButton(Button button) {
         this.button = button;
     }
 
+    /**
+     * Gets the ID of this wall.
+     * @return The ID of the wall.
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Updates moving wall
+     */
     @Override
     public void update() {
+        // Set which point to go to depending on whether the button is being pressed
         if (button.isPressed()) {
             currentPointIndex = 1;
 
         } else {
             currentPointIndex = 0;
         }
+
+        // Update velocity and move
         updateVel();
         tryMove((int)vel.getX(), (int)vel.getY());
     }
 
+    /**
+     * Updates the velocity
+     */
     private void updateVel () {
         Point next = path[currentPointIndex];
         if (getHitbox().getX() < next.getX() * MainFrame.gridScreenRatio) {
-            vel.setX(5);
+            vel.setX(SPEED_RATIO * MainFrame.gridScreenRatio);
             vel.setY(0);
         } else if (getHitbox().getX() > next.getX() * MainFrame.gridScreenRatio) {
-            vel.setX(-5);
+            vel.setX(-SPEED_RATIO * MainFrame.gridScreenRatio);
             vel.setY(0);
         } else if (getHitbox().getY() < next.getY() * MainFrame.gridScreenRatio) {
-            vel.setY(5);
+            vel.setY(SPEED_RATIO * MainFrame.gridScreenRatio);
             vel.setX(0);
         } else if (getHitbox().getY() > next.getY() * MainFrame.gridScreenRatio){
-            vel.setY(-5);
+            vel.setY(-SPEED_RATIO * MainFrame.gridScreenRatio);
             vel.setX(0);
         } else {
             vel.setX(0);
@@ -116,8 +150,11 @@ public class MovingWall extends Wall implements Movable, Updatable {
             }
         }
 
+        // Check collision with player and crate if player is holding a crate
         if (player.isHoldingCrate() && getHitbox().intersects(player.getHeldCrate().getHitbox())) {
             collided = true;
+
+            // Combine player and crate hitbox into one
             int x = (int) (player.getHitbox().getX());
             if (player.getDirection() == "left") {
                 x = (int) (player.getHitbox().getX() - MainFrame.gridScreenRatio);
@@ -126,19 +163,27 @@ public class MovingWall extends Wall implements Movable, Updatable {
             int w = (int) (player.getHitbox().getWidth() + MainFrame.gridScreenRatio);
             int h = MainFrame.gridScreenRatio;
             Rectangle combinedHitbox = new Rectangle(x, y, w, h);
+
+            // Translate original hitboxes
             Point translation = moveCollider(xMove, yMove, combinedHitbox);
             player.getHitbox().translate((int)translation.getX(), (int)translation.getY());
             player.getHeldCrate().getHitbox().translate((int)translation.getX(), (int)translation.getY());
+
         // Check collision with player
         } else if (getHitbox().intersects(player.getHitbox())) {
             collided = true;
             moveCollider(xMove, yMove, player.getHitbox());
         }
-
-
         return collided;
     }
 
+    /**
+     * Moves the specified hitbox to edge of this wall.
+     * @param xMove Used to help determine which edge.
+     * @param yMove Used to help determine which edge.
+     * @param hitbox The hitbox that wall is colliding with.
+     * @return
+     */
     private Point moveCollider (int xMove, int yMove, Rectangle hitbox) {
         int x = (int)hitbox.getX();
         int y = (int)hitbox.getY();
@@ -155,6 +200,11 @@ public class MovingWall extends Wall implements Movable, Updatable {
         return new Point((int)(x + MainFrame.gridScreenRatio - player.getHitbox().getX()), (int)(y - player.getHitbox().getY()));
     }
 
+    /**
+     * Checks collision.
+     * @param hitbox The hitbox to check collision with.
+     * @return A boolean that represents if the wall is colliding with the hitbox.
+     */
     public boolean collide (Rectangle hitbox) {
         return getHitbox().intersects(hitbox);
     }

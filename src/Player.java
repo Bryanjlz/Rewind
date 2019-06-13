@@ -774,7 +774,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     /**
      * Collide with a certain hitbox, use boolen tryX to know whether the player is moving through x or y translation.
      * @param wBox The hitbox of the wall to collide with.
-     * @param tryX
+     * @param tryX A boolean that represents if the player is trying x translation.
      */
     private void wallCollide (Rectangle wBox, boolean tryX) {
         // The player is moving through x translation
