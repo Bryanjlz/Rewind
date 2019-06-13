@@ -846,7 +846,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private void checkInScreen () {
         int xPos = (int)getHitbox().getX();
         int yPos = (int)getHitbox().getY();
-        if (xPos > MainFrame.WIDTH || xPos < -getHitbox().getWidth() || yPos > MainFrame.HEIGHT || yPos < -getHitbox().getHeight()) {
+        if (xPos > MainFrame.WIDTH || xPos < 0 || yPos > MainFrame.HEIGHT) {
             setDead(true);
         }
     }

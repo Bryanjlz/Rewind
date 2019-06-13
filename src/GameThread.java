@@ -9,7 +9,6 @@ public class GameThread implements Runnable {
     private int level;
     private Level currentLevel;
     private Player player;
-    private int fps;
     private boolean menu;
     private Rectangle playHitbox;
     private boolean restartLevel;
@@ -24,11 +23,10 @@ public class GameThread implements Runnable {
      * @param player Reference to player.
      */
     public GameThread (Player player) {
-        level = 6;
+        level = 9;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
-        fps = 0;
         menu = true;
         running = true;
         int boxX = (int)(PLAY_HITBOX_X_RATIO * MainFrame.WIDTH);
@@ -52,14 +50,6 @@ public class GameThread implements Runnable {
      */
     public Level getCurrentLevel() {
         return currentLevel;
-    }
-
-    /**
-     * Gets the fps of the game.
-     * @return An integer representing the fps.
-     */
-    public int getFps() {
-        return fps;
     }
 
     /**
@@ -111,13 +101,18 @@ public class GameThread implements Runnable {
     }
 
     /**
+     * Gets the level player is on.
+     * @return An int that represents the level.
+     */
+    public int getLevel() {
+        return level;
+    }
+
+    /**
      * Starts the main game loop
      */
     public void run() {
         while (running) {
-            // Gets the current time
-            double time = System.nanoTime()/1000000000.0;
-
             // Delay between frames
             try {
                 Thread.sleep(27);
@@ -155,8 +150,8 @@ public class GameThread implements Runnable {
 
                     // Check if level is finished or player is dead or level is restarted
                     if (currentLevel.isLevelFinished()) {
+                        currentLevel.startLevel(player, level + 1);
                         level++;
-                        currentLevel.startLevel(player, level);
                         currentLevel.setLevelFinished(false);
                     }
                     if (player.isDead() || isRestartLevel()) {
@@ -166,7 +161,6 @@ public class GameThread implements Runnable {
 
                 // If player is reversing time
                 } else {
-
                     // Find what is being reversed
                     boolean foundReverse = false;
                     MyArrayList<Crate> crates = currentLevel.getCrates();
@@ -182,7 +176,6 @@ public class GameThread implements Runnable {
 
                             // Get previous state of crate and set it to current crate
                             crates.set(i, crates.get(i).getPreviousStateQueue().pollLast());
-
                             foundReverse = true;
 
                         // If the previous states queue is empty, stop reverse
@@ -210,9 +203,6 @@ public class GameThread implements Runnable {
                     }
                 }
             }
-
-            // Calculate fps based on how long it took to run through one iteration of loop
-            fps = (int)(1 / (System.nanoTime()/1000000000.0 - time));
         }
     }
 }

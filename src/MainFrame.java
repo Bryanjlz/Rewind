@@ -54,6 +54,7 @@ public class MainFrame extends JFrame {
         this.setVisible(true);
 
         // Load and play background music in a loop
+        /*
         try {
             File music = new File("assets/sounds/bgm.wav");
             AudioInputStream sound = AudioSystem.getAudioInputStream(music);
@@ -63,7 +64,7 @@ public class MainFrame extends JFrame {
             bgm.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
 
     }

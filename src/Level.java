@@ -72,7 +72,8 @@ public class Level {
             // Initialize terrain
             MyArrayList<Button> buttons = new MyArrayList<Button>();
             terrain = new Terrain[terrainHeight][terrainWidth];
-            crates = new MyArrayList<>();
+            crates = new MyArrayList<Crate>();
+            movingWalls = new MyArrayList<MovingWall>();
             keys.clear();
             for (int i = 0; i < terrainHeight; i++) {
                 for (int j = 0; j < terrainWidth; j++) {

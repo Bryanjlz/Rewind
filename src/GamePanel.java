@@ -40,6 +40,7 @@ public class GamePanel extends JPanel {
     private BufferedImage[] door;
     private BufferedImage[] button;
     private BufferedImage[] menu;
+    private BufferedImage[] tutorial;
 
     /**
      * Creates the panel.
@@ -59,6 +60,7 @@ public class GamePanel extends JPanel {
         door = new BufferedImage[2];
         button = new BufferedImage[2];
         menu = new BufferedImage[18];
+        tutorial = new BufferedImage[9];
         loadImages();
     }
 
@@ -74,6 +76,18 @@ public class GamePanel extends JPanel {
      * Loads the images that are required for the game.
      */
     private void loadImages() {
+        //Load tutorial images
+        for (int i = 0; i < tutorial.length; i++) {
+            if (i != 6) {
+                File file = new File("assets/images/tutorials/tutorial" + (i + 1) + ".png");
+                try {
+                    tutorial[i] = ImageIO.read(file);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         // Load menu images
         for (int i = 0; i < menu.length; i++) {
             File file = new File ("assets/images/menu/menu" + (i + 1) + ".png");
@@ -169,6 +183,10 @@ public class GamePanel extends JPanel {
             g.setColor(Color.GRAY);
             g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
 
+            if (game.getLevel() <= tutorial.length && game.getLevel() != 7) {
+                g.drawImage(tutorial[game.getLevel() - 1], 0, 0, MainFrame.WIDTH, MainFrame.HEIGHT, null);
+            }
+
             // Draw player previous state trail
             MyQueue<Player> playerQueue = new MyQueue<Player>(player.getPreviousStateQueue());
             Graphics2D g2D = (Graphics2D)g;
@@ -180,6 +198,8 @@ public class GamePanel extends JPanel {
                     float alpha = (float) ((255 - i) / 500.0); //draw half transparent
                     AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
                     g2D.setComposite(ac);
+
+                    // Draw previous states of player
                     Player tempPlayer = playerQueue.pollLast();
                     drawPlayer(g2D, tempPlayer);
                 }
@@ -197,6 +217,8 @@ public class GamePanel extends JPanel {
                             float alpha = (float) ((255 - j) / 2000.0);
                             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha);
                             g2D.setComposite(ac);
+
+                            // Draw previous states of the crates
                             Crate tempCrate = crateQueue.pollLast();
                             Rectangle hitbox = tempCrate.getHitbox();
                             g.drawImage(crate, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
@@ -210,13 +232,8 @@ public class GamePanel extends JPanel {
             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER,alpha);
             g2D.setComposite(ac);
 
-
             drawPlayer(g, player);
             drawTerrain(g);
-
-            // Draw FPS
-            g.setColor(Color.black);
-            g.drawString(Integer.toString(game.getFps()), 100, 100);
 
             // If level is finished or the player died, set transition to true
             if (player.isDead() || currentLevel.isLevelFinished()) {
