@@ -24,6 +24,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
     private String direction;
     private Terrain[][] terrain;
     private MyArrayList<Crate> crates;
+    private MyArrayList<MovingWall> movingWalls;
     private boolean onGround;
     private boolean isDead;
     private boolean isReverse;
@@ -75,6 +76,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         direction = player.getDirection();
         terrain = player.getTerrain();
         crates = player.getCrates();
+        movingWalls = player.getMovingWalls();
         holdLeft = player.isHoldLeft();
         holdRight = player.isHoldRight();
         isReverse = true;
@@ -268,6 +270,22 @@ public class Player implements Movable, Updatable, Reversable<Player> {
      */
     public MyArrayList<Crate> getCrates() {
         return crates;
+    }
+
+    /**
+     * Gets the moving walls the player has a reference to.
+     * @return An ArrayList of moving walls.
+     */
+    public MyArrayList<MovingWall> getMovingWalls() {
+        return movingWalls;
+    }
+
+    /**
+     * Sets the moving walls the player has a reference to.
+     * @param movingWalls An ArrayList of moving walls.
+     */
+    public void setMovingWalls(MyArrayList<MovingWall> movingWalls) {
+        this.movingWalls = movingWalls;
     }
 
     /**
@@ -674,6 +692,11 @@ public class Player implements Movable, Updatable, Reversable<Player> {
             for (int j = 0; j < terrain[0].length; j++) {
                 if (terrain[i][j] instanceof Exit) {
                     ((Exit)terrain[i][j]).collide(getHitbox());
+                } else if (terrain[i][j] instanceof Button) {
+                    ((Button)terrain[i][j]).collide(getHitbox());
+                    if (isHoldingCrate()) {
+                        ((Button) terrain[i][j]).collide(heldCrate.getHitbox());
+                    }
                 }
             }
         }
@@ -697,11 +720,13 @@ public class Player implements Movable, Updatable, Reversable<Player> {
         // Check collision with walls hat aren't doors and locked doors
         for (int i = 0; i < terrain.length; i++) {
             for (int j = 0; j < terrain[0].length; j++) {
-                if ((terrain[i][j] instanceof Wall && !(terrain[i][j] instanceof Door)) || (terrain[i][j] instanceof Door && !((Door)terrain[i][j]).isUnlocked())) {
+                if ((terrain[i][j] instanceof Wall && !(terrain[i][j] instanceof Door))
+                        || (terrain[i][j] instanceof Door && !((Door)terrain[i][j]).isUnlocked())) {
 
                     // If player is holding crate, also check crate collision
                     if(isHoldingCrate()) {
-                        collided = ((Wall)(terrain[i][j])).collide(heldCrate.getHitbox()) || ((Wall)(terrain[i][j])).collide(getHitbox());
+                        collided = ((Wall)(terrain[i][j])).collide(heldCrate.getHitbox())
+                                || ((Wall)(terrain[i][j])).collide(getHitbox());
                     } else {
                         collided = ((Wall)(terrain[i][j])).collide(getHitbox());
                     }
@@ -728,6 +753,22 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                     return true;
                 }
             }
+        }
+
+        // Check collision with moving walls
+        for (int i = 0; i < movingWalls.size(); i++) {
+            if (movingWalls.get(i).getButton().isPressed()){
+                if (isHoldingCrate()) {
+                    collided = movingWalls.get(i).collide(heldCrate.getHitbox()) || movingWalls.get(i).collide(getHitbox());
+                } else {
+                    collided = movingWalls.get(i).collide(getHitbox());
+                }
+                if (collided) {
+                    wallCollide(movingWalls.get(i).getHitbox(), tryX);
+                    return true;
+                }
+            }
+
         }
         return false;
     }

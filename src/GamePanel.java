@@ -28,6 +28,8 @@ public class GamePanel extends JPanel {
     private static final int FACE_FORWARD = 2;
     private static final int LOCKED = 0;
     private static final int UNLOCKED = 1;
+    private static final int PRESSED = 0;
+    private static final int UNPRESSED = 1;
     private BufferedImage[][][] run;
     private BufferedImage[][] stand;
     private BufferedImage[][] slide;
@@ -36,6 +38,7 @@ public class GamePanel extends JPanel {
     private BufferedImage key;
     private BufferedImage crate;
     private BufferedImage[] door;
+    private BufferedImage[] button;
     private BufferedImage[] menu;
 
     /**
@@ -54,6 +57,7 @@ public class GamePanel extends JPanel {
         slide = new BufferedImage[2][2];
         jump = new BufferedImage[2][2];
         door = new BufferedImage[2];
+        button = new BufferedImage[2];
         menu = new BufferedImage[18];
         loadImages();
     }
@@ -139,15 +143,12 @@ public class GamePanel extends JPanel {
             key = ImageIO.read(new File("assets/images/terrain/key.png"));
             wall = ImageIO.read(new File("assets/images/terrain/wall.png"));
             crate = ImageIO.read(new File("assets/images/terrain/crate.png"));
+            door[0] = ImageIO.read(new File("assets/images/terrain/door1.png"));
+            door[1] = ImageIO.read(new File("assets/images/terrain/door2.png"));
+            button[0] = ImageIO.read(new File("assets/images/terrain/button1.png"));
+            button[1] = ImageIO.read(new File("assets/images/terrain/button2.png"));
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        for (int i = 0; i < door.length; i++) {
-            try {
-                door[i] = ImageIO.read(new File("assets/images/terrain/door" + (i + 1) + ".png"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -241,9 +242,9 @@ public class GamePanel extends JPanel {
      */
     private void drawTimeOverlay (Graphics g) {
         if (timeAlpha < 75 && player.isReversing()) {
-            timeAlpha += 0.2;
+            timeAlpha += 1;
         } else if (timeAlpha > 0 && !player.isReversing()) {
-            timeAlpha -= 0.2;
+            timeAlpha -= 1;
         }
 
         if (timeAlpha != 0) {
@@ -462,9 +463,9 @@ public class GamePanel extends JPanel {
                 // Draw door
                 } else if (terrain[i][j] instanceof Door) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
-                    Image img = door[0];
+                    Image img = door[LOCKED];
                     if (((Door)terrain[i][j]).isUnlocked()) {
-                        img = door[1];
+                        img = door[UNLOCKED];
                     }
                     g.drawImage(img, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
 
@@ -472,6 +473,13 @@ public class GamePanel extends JPanel {
                 } else if (terrain[i][j] instanceof Wall) {
                     Rectangle hitbox = terrain[i][j].getHitbox();
                     g.drawImage(wall, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
+                } else if (terrain[i][j] instanceof Button) {
+                    Rectangle hitbox = terrain[i][j].getHitbox();
+                    Image img = button[PRESSED];
+                    if (((Button)terrain[i][j]).isPressed()) {
+                        img = button[UNPRESSED];
+                    }
+                    g.drawImage(img, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
                 }
             }
         }
@@ -490,6 +498,12 @@ public class GamePanel extends JPanel {
                 Rectangle hitbox = player.getKeys().get(i).getHitbox();
                 g.drawImage(key, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
             }
+        }
+
+        // Draw moving walls
+        for (int i = 0; i < currentLevel.getMovingWalls().size(); i++) {
+            Rectangle hitbox = currentLevel.getMovingWalls().get(i).getHitbox();
+            g.drawImage(wall, (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getWidth(), (int) hitbox.getHeight(), null);
         }
     }
 }

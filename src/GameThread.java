@@ -24,7 +24,7 @@ public class GameThread implements Runnable {
      * @param player Reference to player.
      */
     public GameThread (Player player) {
-        level = 3;
+        level = 6;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
@@ -130,8 +130,23 @@ public class GameThread implements Runnable {
                 // If player is not reversing time
                 if (!player.isReversing()) {
 
+                    // Unpress every button
+                    Terrain[][] terrain = currentLevel.getTerrain();
+                    for (int i = 0; i < terrain.length; i++) {
+                        for (int j = 0; j < terrain[0].length; j++) {
+                            if (terrain[i][j] instanceof Button) {
+                                ((Button)terrain[i][j]).setPressed(false);
+                            }
+                        }
+                    }
+
                     // Update player
                     player.update();
+
+                    // Update moving walls
+                    for (int i = 0; i < currentLevel.getMovingWalls().size(); i++) {
+                        currentLevel.getMovingWalls().get(i).update();
+                    }
 
                     // Update crates
                     for (int i = 0; i < currentLevel.getCrates().size(); i++) {

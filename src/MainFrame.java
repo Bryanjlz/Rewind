@@ -119,7 +119,7 @@ public class MainFrame extends JFrame {
                             boolean wallClip = false;
                             for (int i = 0; i < terrain.length && !wallClip; i++) {
                                 for (int j = 0; j < terrain[0].length && !wallClip; j++) {
-                                    if (terrain[i][j] != null && crateBox.intersects(terrain[i][j].getHitbox())) {
+                                    if (terrain[i][j] instanceof Wall && crateBox.intersects(terrain[i][j].getHitbox())) {
                                         wallClip = true;
                                     }
                                 }
@@ -164,7 +164,7 @@ public class MainFrame extends JFrame {
                             boolean wallClip = false;
                             for (int i = 0; i < terrain.length && !wallClip; i++) {
                                 for (int j = 0; j < terrain[0].length && !wallClip; j++) {
-                                    if (terrain[i][j] != null && crateBox.intersects(terrain[i][j].getHitbox())) {
+                                    if (terrain[i][j] instanceof Wall && crateBox.intersects(terrain[i][j].getHitbox())) {
                                         wallClip = true;
                                     }
                                 }

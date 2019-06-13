@@ -1,0 +1,14 @@
+16
+9
+w w w w w w w w w w w w w w w w
+w x x x x x x x x x x x x x x w
+w x x x x x x x x x x x x x x w
+w x x x x x x x x x x x x x x w
+w x x x x x x x x x x x x x x w
+w x m12 x x m11 x x x x x x x x x w
+w x x x x x x x x x c x x x x w
+w p x x x x b1 x x x c x x x e w
+w w w w w w w w w w w w w w w w
+
+11 5 5 5 3
+12 2 5 2 3

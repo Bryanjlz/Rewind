@@ -44,6 +44,7 @@ public class Level {
         player.setKeys(keys);
         player.setTerrain(terrain);
         player.setCrates(crates);
+        player.setMovingWalls(movingWalls);
         player.setVel(new MyVector(0,0));
         player.setAcc(new MyVector(0, 0));
         player.setPreviousStateQueue(new MyQueue<Player>());
@@ -69,6 +70,7 @@ public class Level {
             player.getHitbox().setSize(MainFrame.gridScreenRatio, MainFrame.gridScreenRatio);
 
             // Initialize terrain
+            MyArrayList<Button> buttons = new MyArrayList<Button>();
             terrain = new Terrain[terrainHeight][terrainWidth];
             crates = new MyArrayList<>();
             keys.clear();
@@ -87,7 +89,7 @@ public class Level {
 
                     // Add crate
                     } else if (terrainString.equals("c")) {
-                        crates.add(new Crate (j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, terrain, crates, player));
+                        crates.add(new Crate (j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, terrain, crates, movingWalls, player));
 
                     // Move player to specified location
                     } else if (terrainString.equals("p")) {
@@ -95,13 +97,46 @@ public class Level {
 
                     // Add key with the specified id
                     } else if (terrainString.charAt(0) == 'k') {
-                        int id = Character.getNumericValue(terrainString.charAt(1));
+                        int id = Integer.parseInt(terrainString.substring(1));
                         keys.add(new Key(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, id));
 
                     // Add door with the specified id
                     } else if (terrainString.charAt(0) == 'd') {
-                        int id = Character.getNumericValue(terrainString.charAt(1));
+                        int id = Integer.parseInt(terrainString.substring(1));
                         terrain[i][j] = new Door(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, id);
+
+                    /* Adds moving walls with the specified id, tens digit represents connection to what button, ones
+                       digit specifies which path to take, which is given later in the file
+                       */
+                    } else if (terrainString.charAt(0) == 'm') {
+                        int id = Integer.parseInt(terrainString.substring(1));
+                        movingWalls.add(new MovingWall(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, id, player, crates));
+
+                    // Adds a button with the specified id
+                    } else if (terrainString.charAt(0) == 'b') {
+                        int id = Integer.parseInt(terrainString.substring(1));
+                        terrain[i][j] = new Button(j * MainFrame.gridScreenRatio, i * MainFrame.gridScreenRatio, id);
+                        buttons.add((Button)terrain[i][j]);
+                    }
+                }
+            }
+
+            while (fileReader.hasNext()) {
+                int id = fileReader.nextInt();
+                Point[] wallPath = new Point[2];
+                for (int i = 0; i < 2; i++) {
+                    int x = fileReader.nextInt();
+                    int y = fileReader.nextInt();
+                    wallPath[i] = new Point(x, y);
+                }
+                for (int i = 0; i < movingWalls.size(); i++) {
+                    if (movingWalls.get(i).getId() == id) {
+                        movingWalls.get(i).setPath(wallPath);
+                        for (int j = 0; j < buttons.size(); j++) {
+                            if (id / 10 == buttons.get(j).getId()) {
+                                movingWalls.get(i).setButton(buttons.get(j));
+                            }
+                        }
                     }
                 }
             }

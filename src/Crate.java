@@ -16,6 +16,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
     private Player player;
     private Terrain[][] terrain;
     private MyArrayList<Crate> crates;
+    private MyArrayList<MovingWall> movingWalls;
     private boolean reverse;
     private MyQueue<Crate> previousStateQueue;
     private static double FRICTION_ACC_RATIO = 2.04 / 120.0;
@@ -28,7 +29,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
      * @param crates The ArrayList of crates to check collisions.
      * @param player The player to check collisions.
      */
-    public Crate(int x, int y, Terrain[][] terrain, MyArrayList<Crate> crates, Player player) {
+    public Crate(int x, int y, Terrain[][] terrain, MyArrayList<Crate> crates, MyArrayList<MovingWall> movingWalls, Player player) {
         super(x, y);
         vel = new MyVector(0, 0);
         acc = new MyVector(0, 0);
@@ -41,6 +42,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         previousStateQueue = new MyQueue<Crate>();
         this.terrain = terrain;
         this.crates = crates;
+        this.movingWalls = movingWalls;
         this.player = player;
     }
 
@@ -57,6 +59,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         frictionAcc = MainFrame.gridScreenRatio * Player.RUN_ACC_RATIO;
         terrain = crate.getTerrain();
         crates = crate.getCrates();
+        movingWalls = crate.getMovingWalls();
         player = crate.getPlayer();
         onGround = crate.isOnGround();
         reverse = true;
@@ -158,6 +161,10 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         return crates;
     }
 
+    public MyArrayList<MovingWall> getMovingWalls() {
+        return movingWalls;
+    }
+
     /**
      * Gets the player.
      * @return The player.
@@ -205,6 +212,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
             // Apply drags and movement when crate isn't being reversed
             if (!isReverse()) {
                 tryMove((int) vel.getX(), (int) vel.getY());
+                checkTerrainCollisions();
 
                 // Apply friction drag
                 if (onGround) {
@@ -293,6 +301,16 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         }
     }
 
+    private void checkTerrainCollisions() {
+        for (int i = 0; i < terrain.length; i++) {
+            for (int j = 0; j < terrain[0].length; j++) {
+                if (terrain[i][j] instanceof Button) {
+                    ((Button)terrain[i][j]).collide(getHitbox());
+                }
+            }
+        }
+    }
+
     /**
      * Checks for collision with walls, crates, and player.
      * @return A boolean that represents if this crate is colliding with a wall, crate, or player.
@@ -325,6 +343,14 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
                 if (collided) {
                     return true;
                 }
+            }
+        }
+
+        //Check collision with moving walls
+        for (int i = 0; i < movingWalls.size(); i++) {
+            collided = movingWalls.get(i).collide(getHitbox());
+            if (collided) {
+                return true;
             }
         }
 
