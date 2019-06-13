@@ -297,7 +297,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
      * Checks for collision with walls, crates, and player.
      * @return A boolean that represents if this crate is colliding with a wall, crate, or player.
      */
-    private boolean checkWallCollisions(boolean tryX) {
+    public boolean checkWallCollisions(boolean tryX) {
         boolean collided = false;
 
         // Checks collision with walls

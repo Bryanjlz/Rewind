@@ -10,30 +10,34 @@ public class GameThread implements Runnable {
     private Level currentLevel;
     private Player player;
     private boolean menu;
-    private Rectangle playHitbox;
+    private boolean gameOver;
+    private boolean pause;
+    private Rectangle buttonHitbox;
     private boolean restartLevel;
     private boolean running;
-    private static final double PLAY_HITBOX_WIDTH_RATIO = 600 / 1920.0;
-    private static final double PLAY_HITBOX_X_RATIO =  660 / 1920.0;
-    private static final double PLAY_HITBOX_HEIGHT_RATIO = 250 / 1080.0;
-    private static final double PLAY_HITBOX_Y_RATIO = 615.55 / 1080.0;
+    private static final int FINAL_LEVEL = 10;
+    private static final double BUTTON_HITBOX_WIDTH_RATIO = 600 / 1920.0;
+    private static final double BUTTON_HITBOX_X_RATIO =  660 / 1920.0;
+    private static final double BUTTON_HITBOX_HEIGHT_RATIO = 250 / 1080.0;
+    private static final double BUTTON_HITBOX_Y_RATIO = 615.55 / 1080.0;
 
     /**
      * Creates the game thread.
      * @param player Reference to player.
      */
     public GameThread (Player player) {
-        level = 9;
+        level = 2;
         this.player = player;
         currentLevel = new Level(player);
         currentLevel.startLevel(player, level);
         menu = true;
         running = true;
-        int boxX = (int)(PLAY_HITBOX_X_RATIO * MainFrame.WIDTH);
-        int boxY = (int)(PLAY_HITBOX_Y_RATIO * MainFrame.HEIGHT);
-        int boxW = (int)(PLAY_HITBOX_WIDTH_RATIO * MainFrame.WIDTH);
-        int boxH = (int)(PLAY_HITBOX_HEIGHT_RATIO * MainFrame.HEIGHT);
-        playHitbox = new Rectangle (boxX, boxY, boxW, boxH);
+        int boxX = (int)(BUTTON_HITBOX_X_RATIO * MainFrame.WIDTH);
+        int boxY = (int)(BUTTON_HITBOX_Y_RATIO * MainFrame.HEIGHT);
+        int boxW = (int)(BUTTON_HITBOX_WIDTH_RATIO * MainFrame.WIDTH);
+        int boxH = (int)(BUTTON_HITBOX_HEIGHT_RATIO * MainFrame.HEIGHT);
+        buttonHitbox = new Rectangle (boxX, boxY, boxW, boxH);
+
     }
 
     /**
@@ -69,11 +73,27 @@ public class GameThread implements Runnable {
     }
 
     /**
+     * Checks if the game is over.
+     * @return A boolean that represents if the game is over.
+     */
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    /**
+     * Sets the boolean that represents if the game is over.
+     * @param gameOver A boolean that represents if the game is over.
+     */
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
+    /**
      * Gets the hitbox of the play button on the menu.
      * @return A Rectangle that represents the hitbox of the play button.
      */
-    public Rectangle getPlayHitbox() {
-        return playHitbox;
+    public Rectangle getButtonHitbox() {
+        return buttonHitbox;
     }
 
     /**
@@ -120,8 +140,8 @@ public class GameThread implements Runnable {
                 e.printStackTrace();
             }
 
-            // Run game if its not menu
-            if (!menu) {
+            // Run game if its not  or game over
+            if (!menu && !gameOver) {
                 // If player is not reversing time
                 if (!player.isReversing()) {
 
@@ -150,9 +170,22 @@ public class GameThread implements Runnable {
 
                     // Check if level is finished or player is dead or level is restarted
                     if (currentLevel.isLevelFinished()) {
-                        currentLevel.startLevel(player, level + 1);
-                        level++;
-                        currentLevel.setLevelFinished(false);
+                        if (level + 1 > FINAL_LEVEL) {
+                            try {
+                                Thread.sleep(500);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            player.getHitbox().setLocation(0,0);
+                            currentLevel.setLevelFinished(false);
+                            level = 1;
+                            currentLevel.startLevel(player, level);
+                            setGameOver(true);
+                        } else {
+                            currentLevel.startLevel(player, level + 1);
+                            level++;
+                            currentLevel.setLevelFinished(false);
+                        }
                     }
                     if (player.isDead() || isRestartLevel()) {
                         currentLevel.startLevel(player, level);

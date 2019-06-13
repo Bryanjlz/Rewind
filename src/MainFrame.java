@@ -316,9 +316,13 @@ public class MainFrame extends JFrame {
 
             // If menu, check if player is clicking play
             if (game.isMenu()) {
-                if (game.getPlayHitbox().contains(mousePos)) {
+                if (game.getButtonHitbox().contains(mousePos)) {
                     game.setMenu(false);
-
+                }
+            } else if (game.isGameOver()) {
+                if (game.getButtonHitbox().contains(mousePos)) {
+                    game.setMenu(true);
+                    game.setGameOver(false);
                 }
             } else {
                 // Stop player reversing

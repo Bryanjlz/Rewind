@@ -40,6 +40,7 @@ public class GamePanel extends JPanel {
     private BufferedImage[] door;
     private BufferedImage[] button;
     private BufferedImage[] menu;
+    private BufferedImage gameOver;
     private BufferedImage[] tutorial;
 
     /**
@@ -96,6 +97,13 @@ public class GamePanel extends JPanel {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        //Load game over screen
+        try {
+            gameOver = ImageIO.read(new File ("assets/images/gameOver.png"));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         // Load player run images
@@ -177,6 +185,15 @@ public class GamePanel extends JPanel {
         // Draw menu
         if (game.isMenu()) {
             drawMenu(g);
+
+        // Draw game over screen
+        } else if (game.isGameOver()) {
+            // Draw Background
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, MainFrame.WIDTH, MainFrame.HEIGHT);
+            g.drawImage(gameOver, 0, 0, MainFrame.WIDTH, MainFrame.HEIGHT, null);
+
+        // Draw in game play
         } else {
 
             // Draw Background

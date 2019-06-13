@@ -714,7 +714,7 @@ public class Player implements Movable, Updatable, Reversable<Player> {
      * @param tryX If the player is moving through x translation or y translation.
      * @return A boolean that represents if the player is colliding with anything.
      */
-    private boolean checkWallCollisions (boolean tryX) {
+    public boolean checkWallCollisions (boolean tryX) {
         boolean collided;
 
         // Check collision with walls hat aren't doors and locked doors
@@ -729,6 +729,9 @@ public class Player implements Movable, Updatable, Reversable<Player> {
                                 || ((Wall)(terrain[i][j])).collide(getHitbox());
                     } else {
                         collided = ((Wall)(terrain[i][j])).collide(getHitbox());
+                        if (collided) {
+                            int x = 1;
+                        }
                     }
                     if (collided) {
                         wallCollide(terrain[i][j].getHitbox(), tryX);

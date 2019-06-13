@@ -14,7 +14,7 @@ public class MovingWall extends Wall implements Movable, Updatable {
     private Button button;
     private Player player;
     private MyArrayList<Crate> crates;
-    private static final double SPEED_RATIO = 7 / 120.0;
+    private static final double SPEED = 5;
 
     /**
      * Constructor to create a moving wall with specified location and ID.
@@ -99,16 +99,16 @@ public class MovingWall extends Wall implements Movable, Updatable {
     private void updateVel () {
         Point next = path[currentPointIndex];
         if (getHitbox().getX() < next.getX() * MainFrame.gridScreenRatio) {
-            vel.setX(SPEED_RATIO * MainFrame.gridScreenRatio);
+            vel.setX(SPEED);
             vel.setY(0);
         } else if (getHitbox().getX() > next.getX() * MainFrame.gridScreenRatio) {
-            vel.setX(-SPEED_RATIO * MainFrame.gridScreenRatio);
+            vel.setX(-SPEED);
             vel.setY(0);
         } else if (getHitbox().getY() < next.getY() * MainFrame.gridScreenRatio) {
-            vel.setY(SPEED_RATIO * MainFrame.gridScreenRatio);
+            vel.setY(SPEED);
             vel.setX(0);
         } else if (getHitbox().getY() > next.getY() * MainFrame.gridScreenRatio){
-            vel.setY(-SPEED_RATIO * MainFrame.gridScreenRatio);
+            vel.setY(-SPEED);
             vel.setX(0);
         } else {
             vel.setX(0);
