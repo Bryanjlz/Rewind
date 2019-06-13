@@ -126,9 +126,9 @@ public class MovingWall extends Wall implements Movable, Updatable {
             int w = (int) (player.getHitbox().getWidth() + MainFrame.gridScreenRatio);
             int h = MainFrame.gridScreenRatio;
             Rectangle combinedHitbox = new Rectangle(x, y, w, h);
-            Point movedLocation = moveCollider(xMove, yMove, combinedHitbox);
-            player.getHitbox().setLocation(movedLocation);
-
+            Point translation = moveCollider(xMove, yMove, combinedHitbox);
+            player.getHitbox().translate((int)translation.getX(), (int)translation.getY());
+            player.getHeldCrate().getHitbox().translate((int)translation.getX(), (int)translation.getY());
         // Check collision with player
         } else if (getHitbox().intersects(player.getHitbox())) {
             collided = true;
@@ -152,7 +152,7 @@ public class MovingWall extends Wall implements Movable, Updatable {
             y = (int)(getHitbox().getY() - hitbox.getWidth());
         }
         hitbox.setLocation(x, y);
-        return new Point(x, y);
+        return new Point((int)(x + MainFrame.gridScreenRatio - player.getHitbox().getX()), (int)(y - player.getHitbox().getY()));
     }
 
     public boolean collide (Rectangle hitbox) {

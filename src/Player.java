@@ -757,19 +757,17 @@ public class Player implements Movable, Updatable, Reversable<Player> {
 
         // Check collision with moving walls
         for (int i = 0; i < movingWalls.size(); i++) {
-            if (movingWalls.get(i).getButton().isPressed()){
-                if (isHoldingCrate()) {
-                    collided = movingWalls.get(i).collide(heldCrate.getHitbox()) || movingWalls.get(i).collide(getHitbox());
-                } else {
-                    collided = movingWalls.get(i).collide(getHitbox());
-                }
-                if (collided) {
-                    wallCollide(movingWalls.get(i).getHitbox(), tryX);
-                    return true;
-                }
+            if (isHoldingCrate()) {
+                collided = movingWalls.get(i).collide(heldCrate.getHitbox()) || movingWalls.get(i).collide(getHitbox());
+            } else {
+                collided = movingWalls.get(i).collide(getHitbox());
             }
-
+            if (collided) {
+                wallCollide(movingWalls.get(i).getHitbox(), tryX);
+                return true;
+            }
         }
+
         return false;
     }
 

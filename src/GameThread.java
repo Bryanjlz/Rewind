@@ -143,14 +143,14 @@ public class GameThread implements Runnable {
                     // Update player
                     player.update();
 
-                    // Update moving walls
-                    for (int i = 0; i < currentLevel.getMovingWalls().size(); i++) {
-                        currentLevel.getMovingWalls().get(i).update();
-                    }
-
                     // Update crates
                     for (int i = 0; i < currentLevel.getCrates().size(); i++) {
                         currentLevel.getCrates().get(i).update();
+                    }
+
+                    // Update moving walls
+                    for (int i = 0; i < currentLevel.getMovingWalls().size(); i++) {
+                        currentLevel.getMovingWalls().get(i).update();
                     }
 
                     // Check if level is finished or player is dead or level is restarted

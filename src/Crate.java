@@ -200,9 +200,9 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
 
             // Adjust the hitbox of the crate depending on the direction the player is facing
             if (player.getDirection().equals("right")) {
-                getHitbox().setLocation((int) (pBox.getX() + pBox.getWidth()), (int) (pBox.getY() + pBox.getHeight() - getHitbox().getHeight()));
+                getHitbox().setLocation((int) (pBox.getX() + pBox.getWidth()), (int) (pBox.getY()));
             } else {
-                getHitbox().setLocation((int) (pBox.getX() - getHitbox().getWidth()), (int) (pBox.getY() + pBox.getHeight() - getHitbox().getHeight()));
+                getHitbox().setLocation((int) (pBox.getX() - getHitbox().getWidth()), (int) (pBox.getY()));
             }
 
             // Set player velocity to crate's velocity
@@ -266,15 +266,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         getHitbox().translate(xMove, 0);
 
         // Check if it collides with any walls, crates, or player
-        if (checkWallCollisions()) {
-            // Move crate to edge of the wall
-            if (vel.getX() > 0) {
-                xPos = (int) (getHitbox().getX() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
-            } else {
-                xPos = (int) ((getHitbox().getX() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
-            }
-            getHitbox().setLocation(xPos, (int) getHitbox().getY());
-
+        if (checkWallCollisions(true)) {
             // Set x velocity to 0
             getVel().setX(0);
         }
@@ -283,20 +275,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         getHitbox().translate(0, yMove);
 
         // Check if it collides with any walls, crates, or player
-        if (checkWallCollisions()) {
-            // Move crate to edge of the wall
-            if (vel.getY() > 0) {
-                yPos = (int) (getHitbox().getY() / MainFrame.gridScreenRatio) * MainFrame.gridScreenRatio;
-                getVel().setY(0);
-                //set on ground variable to true since it's colliding with a wall below
-                onGround = true;
-            } else {
-                yPos = (int) ((getHitbox().getY() / MainFrame.gridScreenRatio) + 1) * MainFrame.gridScreenRatio;
-                onGround = false;
-                vel.setY(-vel.getY() * 0.2);
-            }
-            getHitbox().setLocation((int) getHitbox().getX(), yPos);
-        } else {
+        if (!checkWallCollisions(false)) {
             onGround = false;
         }
     }
@@ -315,7 +294,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
      * Checks for collision with walls, crates, and player.
      * @return A boolean that represents if this crate is colliding with a wall, crate, or player.
      */
-    private boolean checkWallCollisions() {
+    private boolean checkWallCollisions(boolean tryX) {
         boolean collided = false;
 
         // Checks collision with walls
@@ -328,6 +307,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
                 if (wall || lockedDoor) {
                     collided = ((Wall) (terrain[i][j])).collide(getHitbox());
                     if (collided) {
+                        wallCollide(terrain[i][j].getHitbox(), tryX);
                         return true;
                     }
                 }
@@ -341,6 +321,7 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
             if (crates.get(i) != this) {
                 collided = crates.get(i).collide(getHitbox());
                 if (collided) {
+                    wallCollide(crates.get(i).getHitbox(), tryX);
                     return true;
                 }
             }
@@ -350,15 +331,41 @@ public class Crate extends Terrain implements Movable, Updatable, Reversable<Cra
         for (int i = 0; i < movingWalls.size(); i++) {
             collided = movingWalls.get(i).collide(getHitbox());
             if (collided) {
+                wallCollide(movingWalls.get(i).getHitbox(), tryX);
                 return true;
             }
         }
 
         // Check collision with player
         if (!isPickedUp() && getHitbox().intersects(player.getHitbox())) {
+            wallCollide(player.getHitbox(), tryX);
             collided = true;
         }
         return collided;
+    }
+
+    private void wallCollide (Rectangle hitbox, boolean tryX) {
+        int x = (int)getHitbox().getX();
+        int y = (int)getHitbox().getY();
+        if (tryX) {
+            if (getVel().getX() > 0) {
+                x = (int)(hitbox.getX() - getHitbox().getWidth());
+            } else {
+                x = (int)(hitbox.getX() + hitbox.getWidth());
+            }
+        } else {
+            if (getVel().getY() > 0) {
+                y = (int)(hitbox.getY() - getHitbox().getWidth());
+                getVel().setY(0);
+                //set on ground variable to true since it's colliding with a wall below
+                onGround = true;
+            } else {
+                y = (int)(hitbox.getY() + hitbox.getWidth());
+                onGround = false;
+                vel.setY(-vel.getY() * 0.2);
+            }
+        }
+        getHitbox().setLocation(x, y);
     }
 
     /**
